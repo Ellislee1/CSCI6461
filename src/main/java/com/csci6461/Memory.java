@@ -144,4 +144,19 @@ public class Memory {
         return  newS;
     }
 
+    /**
+     * Gets the first address past the reserved addresses that contains a code
+     * @return Returns an address location
+     */
+    public int get_first_code() {
+        // Loop through memory array and look for the first non-empty element after 5
+        for(int i = 6; i< size; i++){
+            if(this.data[i] != 0){
+                return i; // return first instruction
+            }
+        }
+        // If no instruction is found return the halt code
+        return 5;
+    }
+
 }

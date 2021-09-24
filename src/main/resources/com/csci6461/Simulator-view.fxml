@@ -441,7 +441,7 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
-      <Button fx:id="btnLoadFile" layoutX="797.0" layoutY="619.0" mnemonicParsing="false" onAction="#onLoadFileClick" prefHeight="35.0" prefWidth="65.0" text="Load File" />
+      <Button fx:id="btnLoadFile" layoutX="797.0" layoutY="619.0" mnemonicParsing="false" onAction="#onLoadFileClick" prefHeight="35.0" prefWidth="65.0" text="IPL" />
       <Button fx:id="btnPrtMem" layoutX="798.0" layoutY="664.0" mnemonicParsing="false" onAction="#onPrtMemClick" prefHeight="25.0" prefWidth="65.0" text="Prt Mem" />
       <Button fx:id="btnStep" layoutX="950.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStepClick" prefHeight="35.0" prefWidth="48.0" text="Step+" />
       <Label fx:id="lblCode" layoutX="942.0" layoutY="665.0" text="0x0000">
@@ -450,5 +450,6 @@
          </font>
       </Label>
       <Button layoutX="876.0" layoutY="664.0" mnemonicParsing="false" onAction="#onTranslateClick" text="Translate" />
+      <Button layoutX="1016.0" layoutY="619.0" mnemonicParsing="false" onAction="#onRunClick" prefHeight="35.0" prefWidth="37.0" text="Run" />
    </children>
 </Pane>

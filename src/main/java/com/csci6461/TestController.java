@@ -20,14 +20,14 @@ import java.util.Arrays;
  */
 public class TestController {
 
-     public static boolean[] get_bool_array(String binaryString) {
+    public static boolean[] get_bool_array(String binaryString) {
 
         char[] binary = binaryString.toCharArray(); // Convert to character array
         boolean[] data = new boolean[binary.length]; // Create a new boolean array
 
         // Loop through array and flip bits where a 1 is present
-        for(int x=0; x<binary.length;x++){
-            if(binary[x] == '1'){
+        for (int x = 0; x < binary.length; x++) {
+            if (binary[x] == '1') {
                 data[x] = true;
             }
         }
@@ -61,7 +61,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        boolean [] address = get_bool_array(Integer.toBinaryString((int)testAddress));
+        boolean[] address = get_bool_array(Integer.toBinaryString((int) testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);
@@ -108,7 +108,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = get_bool_array(Integer.toBinaryString((int)testAddress));
+        address = get_bool_array(Integer.toBinaryString((int) testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);
@@ -128,7 +128,7 @@ public class TestController {
 //        }
 
         /* Read register 0 to make sure value was copied */
-        System.out.printf("Value of GPR 0 after LDA #1: %s",Arrays.toString(cu.gpr[0].getSetBits()));
+        System.out.printf("Value of GPR 0 after LDA #1: %s", Arrays.toString(cu.gpr[0].getSetBits()));
 
         /* Test Case 3: Load memory to register 1 without indirection but with indexing */
         System.out.println("\n\nTest Case 3: Load memory to register 1 without indirection but with indexing.\n");
@@ -151,7 +151,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = get_bool_array(Integer.toBinaryString((int)testAddress));
+        address = get_bool_array(Integer.toBinaryString((int) testAddress));
 
 //        cu.load(1040, testInstruction);
 //        cu.writeDataToMemory(1040, testInstruction);
@@ -170,7 +170,7 @@ public class TestController {
         ixBuffer.put((byte) 0x00);
         short ixValue = ixBuffer.getShort(0);
 
-        boolean [] ixArray = get_bool_array(Integer.toBinaryString((int)ixValue));
+        boolean[] ixArray = get_bool_array(Integer.toBinaryString((int) ixValue));
 
         try {
             cu.ixr[0].load(ixArray);
@@ -189,7 +189,7 @@ public class TestController {
 //        }
 
         /* Read register 1 to make sure value was copied */
-        System.out.printf("Value of GPR 1 after LDA #2: %s",Arrays.toString(cu.gpr[1].getSetBits()));
+        System.out.printf("Value of GPR 1 after LDA #2: %s", Arrays.toString(cu.gpr[1].getSetBits()));
 
         /* Test Case 4: Load memory to register 2 with indirection but without indexing */
         System.out.println("\n\nLoad memory to register 2 with indirection but without indexing.\n");
@@ -215,7 +215,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = get_bool_array(Integer.toBinaryString((int)testAddress));
+        address = get_bool_array(Integer.toBinaryString((int) testAddress));
 
 //        cu.load(1040, testInstruction);
 //        cu.writeDataToMemory(1040, testInstruction);
@@ -236,7 +236,7 @@ public class TestController {
 //        }
 
         /* Read register 2 to make sure value was copied */
-        System.out.printf("Value of GPR 2 after LDA #3: %s",Arrays.toString(cu.gpr[2].getSetBits()));
+        System.out.printf("Value of GPR 2 after LDA #3: %s", Arrays.toString(cu.gpr[2].getSetBits()));
 
         /* Test Case 5: Load memory to register 3 with indirection AND indexing */
         System.out.println("\n\nTest Case 3: Load memory to register 3 with indirection AND indexing.\n");
@@ -259,12 +259,12 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = get_bool_array(Integer.toBinaryString((int)testAddress));
+        address = get_bool_array(Integer.toBinaryString((int) testAddress));
 
 //        cu.load(1040, testInstruction);
 //        cu.writeDataToMemory(1040,testInstruction);
-        cu.writeDataToMemory(1043,testInstruction);
-        cu.writeDataToMemory(1044,(short) 0x0000);
+        cu.writeDataToMemory(1043, testInstruction);
+        cu.writeDataToMemory(1044, (short) 0x0000);
 
         try {
             cu.pc.load(address);
@@ -280,7 +280,7 @@ public class TestController {
         ixBuffer.put((byte) 0x00);
         ixValue = ixBuffer.getShort(0);
 
-        ixArray = get_bool_array(Integer.toBinaryString((int)ixValue));
+        ixArray = get_bool_array(Integer.toBinaryString((int) ixValue));
 
         try {
             cu.ixr[1].load(ixArray);
@@ -291,15 +291,16 @@ public class TestController {
         System.out.printf("IXR2 is set to: %d\n", cu.ixr[1].read());
 
         /* Call singleStep on CU to execute test instruction */
-        try {
-//            cu.singleStep();
-            cu.run();
-        } catch (InterruptedException ioe) {
-            System.out.println("Exception during single step execution...");
-            ioe.printStackTrace();
-        }
-
-        /* Read register 0 to make sure value was copied */
-        System.out.printf("Value of GPR 3 after LDA #2: %s",Arrays.toString(cu.gpr[3].getSetBits()));
+//        try {
+////            cu.singleStep();
+//            cu.run();
+//        } catch (InterruptedException ioe) {
+//            System.out.println("Exception during single step execution...");
+//            ioe.printStackTrace();
+//        }
+//
+//        /* Read register 0 to make sure value was copied */
+//        System.out.printf("Value of GPR 3 after LDA #2: %s",Arrays.toString(cu.gpr[3].getSetBits()));
+//    }
     }
 }

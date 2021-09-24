@@ -33,10 +33,10 @@ class CBitSet {
         bit_set = new boolean[this.no_bytes*4];
     }
 
-    /**
-     * Create a bit set from a given boolean array;
-     * @param bit_set The boolean array
-     */
+//    /**
+//     * Create a bit set from a given boolean array;
+//     * @param bit_set The boolean array
+//     */
 //    public CBitSet(boolean[] bit_set){
 //        this.no_bits = bit_set.length;
 //        this.no_bytes = find_bytes(this.no_bits);

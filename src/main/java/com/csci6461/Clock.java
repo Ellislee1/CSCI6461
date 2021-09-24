@@ -1,4 +1,4 @@
-/**
+/*
  * This file implements the system clock for the CSCI 6461 computer
  */
 package com.csci6461;

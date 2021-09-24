@@ -4,6 +4,7 @@
 package com.csci6461;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -165,8 +166,7 @@ public class ControlUnit {
         }
 
         /* Read data from MBR and return */
-        short data = (short) mbr.read();
-        return(data);
+        return((short) mbr.read());
     }
 
     /**
@@ -185,6 +185,16 @@ public class ControlUnit {
 
         /* Call method to load data on MBR into memory */
         mainMemory.write();
+    }
+
+    /**
+     * Get the first command from memory using the memory class and update the program counter to it.
+     */
+    public void get_first_command(){
+        short first_code =  (short) this.mainMemory.get_first_code();
+        boolean[] pc_bits = get_bool_array(getBinaryString(first_code));
+        System.out.println(Arrays.toString(pc_bits));
+        pc.set_bits(pc_bits);
     }
 
     /**
@@ -281,29 +291,28 @@ public class ControlUnit {
         }
     }
     
-    /**
-     * Method to trigger program execution
-     *
-     * @throws InterruptedException When current thread is interrupted by another thread
-     */
-    public void run() throws InterruptedException {
-        /*
-         * Parameter to start/stop program execution
-         */
-        boolean aContinue = true;
-        int ticks = 0;
-        while (aContinue) {
-            
-            systemClock.waitForNextTick();
-
-            try {
-                aContinue = singleStep();
-            } catch (IOException ioe) {
-                System.out.println("Error during step execution");
-                ioe.printStackTrace();
-            }
-        }
-    }
+//    /**
+//     * Method to trigger program execution
+//     *
+//     * @throws InterruptedException When current thread is interrupted by another thread
+//     */
+//    public void run() throws InterruptedException {
+//        /*
+//         * Parameter to start/stop program execution
+//         */
+//        boolean aContinue = true;
+//        while (aContinue) {
+//
+//            systemClock.waitForNextTick();
+//
+//            try {
+//                aContinue = singleStep();
+//            } catch (IOException ioe) {
+//                System.out.println("Error during step execution");
+//                ioe.printStackTrace();
+//            }
+//        }
+//    }
 
     /**
      * Method to execute single step by getting the next instruction in
@@ -389,7 +398,7 @@ public class ControlUnit {
      * @return returns the new address
      */
     private short calculateEA(int address, int ix, int i) throws IOException {
-        short ea = -1;
+        short ea;
 
         System.out.printf("[ControlUnit::CalculateEA] Fields are: Address = %d, IX = %d, I = %d\n",
                 address, ix, i);
@@ -467,6 +476,7 @@ public class ControlUnit {
     /**
      * Get the n-bit binary string
      * @param word 16-bit word to convert to binary
+     * @param n The cut-off point for the string
      * @return Returns the binary string with all 16-bits
      */
     private String getBinaryString(short word, int n){
@@ -485,7 +495,6 @@ public class ControlUnit {
      * @param address The physical address given in opcode
      * @param ix The index register
      * @param i The indirect addressing state
-     * @return Returns a boolean array
      */
     private void getData(int address, int ix, int i) throws IOException{
         /* Calculate effective address with indexing and indirection (if any) */
@@ -516,6 +525,18 @@ public class ControlUnit {
         }
 
         return data;
+    }
+
+    /**
+     * Performs the read memory action
+     */
+    public void read_mem() {
+        try {
+            mainMemory.read();
+        } catch (IOException e) {
+            System.out.println("[ERROR]:: Could not read memory");
+            e.printStackTrace();
+        }
     }
     
 }
