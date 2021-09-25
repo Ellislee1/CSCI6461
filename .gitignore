@@ -3,3 +3,17 @@ CSCI6461.iml
 .idea
 target
 Documentation
+OUT JAR/META-INF/MANIFEST.MF
+OUT JAR/run.bat
+out/artifacts/CSCI6461/CSCI6461.jar
+out/artifacts/CSCI6461/javafx-swt.jar
+out/artifacts/CSCI6461/javafx.base.jar
+out/artifacts/CSCI6461/javafx.controls.jar
+out/artifacts/CSCI6461/javafx.fxml.jar
+out/artifacts/CSCI6461/javafx.graphics.jar
+out/artifacts/CSCI6461/javafx.media.jar
+out/artifacts/CSCI6461/javafx.swing.jar
+out/artifacts/CSCI6461/javafx.web.jar
+out/artifacts/CSCI6461_jar/CSCI6461.jar
+src/main/java/module-info.java
+src/main/resources/META-INF/MANIFEST.MF

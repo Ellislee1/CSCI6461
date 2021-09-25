@@ -359,27 +359,21 @@ public class ControlUnit {
             return(true);
         }
 
-        switch (name) {
-            case "LDR" -> {
-                System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
-                processLD(decodedInstruction, false);
-            }
-            case "STR" -> {
-                System.out.println("[ControlUnit::singleStep] Processing STA instruction...\n");
-                processST(decodedInstruction, false);
-            }
-            case "LDA" -> {
-                System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
-                processLDA(decodedInstruction);
-            }
-            case "LDX" -> {
-                System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
-                processLD(decodedInstruction, true);
-            }
-            case "STX" -> {
-                System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
-                processST(decodedInstruction, true);
-            }
+        if(name.equals("LDR")){
+            System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
+            processLD(decodedInstruction, false);
+        } else if (name.equals("STR")) {
+            System.out.println("[ControlUnit::singleStep] Processing STR instruction...\n");
+            processST(decodedInstruction, false);
+        } else if (name.equals("LDA")) {
+            System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
+            processLDA(decodedInstruction);
+        } else if (name.equals("LDX")) {
+            System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
+            processLD(decodedInstruction, true);
+        } else if (name.equals("STX")) {
+            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
+            processST(decodedInstruction, true);
         }
 
         short count = (short)pc.read();
