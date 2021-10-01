@@ -2,8 +2,10 @@ package com.csci6461;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
+import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -344,11 +346,14 @@ public class ComputerController {
     @FXML
     protected void onLoadFileClick() {
         // UI for loading a file
-        JFileChooser fc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-        fc.showOpenDialog(null);
+//        JFileChooser fc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        final FileChooser fc = new FileChooser();
+        File file = fc.showOpenDialog(null);
+        System.out.printf("Returned from file chooser; File path is %s\n", file.getAbsolutePath());
 
         // Save the file to the path
-        String file_path = fc.getSelectedFile().getAbsolutePath();
+        String file_path = file.getAbsolutePath();
+        System.out.printf("Have program file path.");
 
         // Try catch for opening a file
         try {
@@ -400,6 +405,10 @@ public class ComputerController {
         return b;
     }
 
+    /**
+     * Runs a complete program on click of button
+     * @throws InterruptedException Passes any IO exceptions up the stack.
+     */
     @FXML
     protected void onRunClick() throws InterruptedException {
         boolean run  = true;

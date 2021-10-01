@@ -54,6 +54,7 @@ public class InstructionDecoder {
 
     /**
      * Method to decode instruction
+     * @param word The instruction word to decode
      */
     public Instruction decode(short word) {
         /* First, extract Opcode from instructions we know how to process */

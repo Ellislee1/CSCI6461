@@ -1,5 +1,8 @@
 package com.csci6461;
 
+/**
+ * Operations that deal with storing to or loading from memory
+ */
 public class MemOp extends Instruction{
     /**
      * Constructor for MiscInstruction class that calls abstract class constructor

@@ -53,7 +53,7 @@ public class Register extends CBitSet {
     /**
      * Load data into the bit set using boolean arrays
      * @param data A boolean array
-     * @throws IOException
+     * @throws IOException Throws an IO Exception is item can not load
      */
     public void load(boolean[] data) throws IOException{
         System.out.printf("[Register::load] Input data for register %s: %s\n",
@@ -66,6 +66,7 @@ public class Register extends CBitSet {
      * Method to load a data word as a short
      *
      * @param data Short containing data word to load
+     * @throws IOException Throws a IO exception if item can not be loaded
      */
     public void load(short data) throws IOException {
         load(get_bool_array(Integer.toBinaryString(0xffff & data)));

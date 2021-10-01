@@ -8,6 +8,7 @@ OUT JAR/run.bat
 out/artifacts/CSCI6461/CSCI6461.jar
 out/artifacts/CSCI6461/javafx-swt.jar
 out/artifacts/CSCI6461/javafx.base.jar
+JAVADOC
 out/artifacts/CSCI6461/javafx.controls.jar
 out/artifacts/CSCI6461/javafx.fxml.jar
 out/artifacts/CSCI6461/javafx.graphics.jar

@@ -175,6 +175,7 @@ public class ControlUnit {
      *
      * @param address Int with address in memory in which to load data
      * @param data Short with data to load into memory
+     * @throws IOException Throws exception if can not write to memory
      */
     public void writeDataToMemory (int address, short data) throws IOException {
         /* Load the address into MAR */
@@ -239,7 +240,7 @@ public class ControlUnit {
 
         try {
             if (index){
-                ixr[args[1]].load((short) data);
+                ixr[args[1]-1].load((short) data);
             } else {
                 gpr[args[0]].load((short) data);
             }
@@ -261,7 +262,7 @@ public class ControlUnit {
 
         short data;
         if(index){
-            data = (short) ixr[args[1]].read();
+            data = (short) ixr[args[1]-1].read();
         } else {
             data = (short) gpr[args[0]].read();
         }
@@ -319,6 +320,7 @@ public class ControlUnit {
      * memory, decoding it and executing it
      *
      * @return A boolean set to false whenever halt is received
+     * @throws IOException Passes any IO exceptions up the stack
      */
     public boolean singleStep() throws IOException {
         /* Get next instruction address from PC and convert to int */
