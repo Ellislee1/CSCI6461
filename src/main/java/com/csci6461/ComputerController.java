@@ -2,7 +2,6 @@ package com.csci6461;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.stage.FileChooser;
@@ -11,8 +10,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 
 /**
  * Class for controlling elements of the UI.
@@ -349,14 +346,14 @@ public class ComputerController {
 //        JFileChooser fc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         final FileChooser fc = new FileChooser();
         File file = fc.showOpenDialog(null);
-        System.out.printf("Returned from file chooser; File path is %s\n", file.getAbsolutePath());
-
-        // Save the file to the path
-        String file_path = file.getAbsolutePath();
-        System.out.printf("Have program file path.");
 
         // Try catch for opening a file
         try {
+            System.out.printf("Returned from file chooser; File path is %s\n", file.getAbsolutePath());
+
+            // Save the file to the path
+            String file_path = file.getAbsolutePath();
+            System.out.print("Have program file path.");
             // Create a file reader
             File thisFile = new File(file_path);
             Scanner reader = new Scanner(thisFile);
@@ -372,18 +369,19 @@ public class ComputerController {
                 short value = toByteArray(data[1]);
 
                 cu.writeDataToMemory(memory, value);
+
+                // Update the program counters with the first command
+                cu.get_first_command();
+                // Update the UI elements
+                setUIElem(cu.pc, pcController);
             }
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException | RuntimeException e){
             System.out.println("ERROR: File not found!");
         } catch (IOException e) {
             System.out.println("ERROR: Loading program into memory!");
             e.printStackTrace();
         }
 
-        // Update the program counters with the first command
-        cu.get_first_command();
-        // Update the UI elements
-        setUIElem(cu.pc, pcController);
     }
 
     /**
