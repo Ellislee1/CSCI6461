@@ -70,6 +70,11 @@ public class ControlUnit {
     private final InstructionDecoder instructionDecoder;
 
     /**
+     * Parameter to hold the Arithmetic Logic Unit (ALU)
+     */
+    private final ALU alu;
+
+    /**
      * Parameter to hold system clock
      */
     private final Clock systemClock;
@@ -136,6 +141,11 @@ public class ControlUnit {
         instructionDecoder = new InstructionDecoder();
 
         /*
+         * Create ALU
+         */
+        alu = new ALU(gpr,mbr);
+
+        /*
          * Create system clock and initialize to configured timeout
          */
         systemClock = new Clock(CLOCK_TIMEOUT);
@@ -175,7 +185,6 @@ public class ControlUnit {
      *
      * @param address Int with address in memory in which to load data
      * @param data Short with data to load into memory
-     * @throws IOException Throws exception if can not write to memory
      */
     public void writeDataToMemory (int address, short data) throws IOException {
         /* Load the address into MAR */
@@ -240,7 +249,7 @@ public class ControlUnit {
 
         try {
             if (index){
-                ixr[args[1]-1].load((short) data);
+                ixr[args[1]].load((short) data);
             } else {
                 gpr[args[0]].load((short) data);
             }
@@ -262,7 +271,7 @@ public class ControlUnit {
 
         short data;
         if(index){
-            data = (short) ixr[args[1]-1].read();
+            data = (short) ixr[args[1]].read();
         } else {
             data = (short) gpr[args[0]].read();
         }
@@ -290,6 +299,27 @@ public class ControlUnit {
             System.out.println("[ERROR]:: Could Not read memory");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Processes addition/subtraction from memory to register (E.g. AMR or MBR)
+     *
+     * @param instruction Class with decode instruction
+     *
+     * @return An int with the condition code (0-3)
+     */
+    private int processMathMR(Instruction instruction) throws IOException {
+        int[] args;
+
+        /* Get instruction arguments */
+        args = instruction.getArguments();
+
+        /* Get data from memory into MBR */
+        getData(args[3],args[1],args[2]);
+
+        /* Call operate on ALU with Opcode and return condition code */
+
+        return alu.operate(instruction.getName(),args[0]);
     }
     
 //    /**
@@ -320,7 +350,6 @@ public class ControlUnit {
      * memory, decoding it and executing it
      *
      * @return A boolean set to false whenever halt is received
-     * @throws IOException Passes any IO exceptions up the stack
      */
     public boolean singleStep() throws IOException {
         /* Get next instruction address from PC and convert to int */
@@ -376,6 +405,12 @@ public class ControlUnit {
         } else if (name.equals("STX")) {
             System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
             processST(decodedInstruction, true);
+        } else if (name.equals("AMR")) {
+            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
+            processMathMR(decodedInstruction);
+        } else if (name.equals("AMR")) {
+            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
+            processMathMR(decodedInstruction);
         }
 
         short count = (short)pc.read();
