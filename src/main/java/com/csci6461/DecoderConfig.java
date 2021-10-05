@@ -46,9 +46,8 @@ public class DecoderConfig {
      * @return Instruction object or null if instruction is not configured
      */
     public Instruction getInstruction(int opCode){
-        Instruction instruction = instructions.get(opCode);
 
-        return instruction;
+        return instructions.get(opCode);
     }
 
 }

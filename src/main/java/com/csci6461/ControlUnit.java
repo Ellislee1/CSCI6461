@@ -249,7 +249,7 @@ public class ControlUnit {
 
         try {
             if (index){
-                ixr[args[1]].load((short) data);
+                ixr[args[1]-1].load((short) data);
             } else {
                 gpr[args[0]].load((short) data);
             }
@@ -271,7 +271,7 @@ public class ControlUnit {
 
         short data;
         if(index){
-            data = (short) ixr[args[1]].read();
+            data = (short) ixr[args[1]-1].read();
         } else {
             data = (short) gpr[args[0]].read();
         }
@@ -319,7 +319,7 @@ public class ControlUnit {
 
         /* Call operate on ALU with Opcode and return condition code */
 
-        return alu.operate(instruction.getName(),args[0]);
+        return alu.operate(instruction.getName(),args[0], (short)args[3]);
     }
     
 //    /**
@@ -390,27 +390,35 @@ public class ControlUnit {
             return(true);
         }
 
-        if(name.equals("LDR")){
-            System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
-            processLD(decodedInstruction, false);
-        } else if (name.equals("STR")) {
-            System.out.println("[ControlUnit::singleStep] Processing STR instruction...\n");
-            processST(decodedInstruction, false);
-        } else if (name.equals("LDA")) {
-            System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
-            processLDA(decodedInstruction);
-        } else if (name.equals("LDX")) {
-            System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
-            processLD(decodedInstruction, true);
-        } else if (name.equals("STX")) {
-            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
-            processST(decodedInstruction, true);
-        } else if (name.equals("AMR")) {
-            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
-            processMathMR(decodedInstruction);
-        } else if (name.equals("AMR")) {
-            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
-            processMathMR(decodedInstruction);
+        switch (name) {
+            case "LDR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
+                processLD(decodedInstruction, false);
+            }
+            case "STR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STR instruction...\n");
+                processST(decodedInstruction, false);
+            }
+            case "LDA" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
+                processLDA(decodedInstruction);
+            }
+            case "LDX" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
+                processLD(decodedInstruction, true);
+            }
+            case "STX" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
+                processST(decodedInstruction, true);
+            }
+            case "AMR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AMR instruction...\n");
+                processMathMR(decodedInstruction);
+            }
+            case "SMR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SMR instruction...\n");
+                processMathMR(decodedInstruction);
+            }
         }
 
         short count = (short)pc.read();

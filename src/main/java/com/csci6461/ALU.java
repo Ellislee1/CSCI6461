@@ -17,13 +17,6 @@ public class ALU {
     public Register mbr;
 
     /**
-     * Enumeration for condition codes: cc(0), cc(1), cc(2), and cc(3)
-     */
-    public enum CC {
-        OVERFLOW, UNDERFLOW, DIVZERO, EQUALORNOT
-    }
-
-    /**
      * Construction for the Arithmetic Logic Unit (ALU) class
      *
      * @param gpr An array of Register objects with the GPRs for the simulation
@@ -34,40 +27,29 @@ public class ALU {
         this.gpr = new Register[gpr.length];
 
         /* Iterate through GPR array and save GPR objects */
-        for (int i = 0; i < gpr.length; i++) {
-            this.gpr[i] = gpr[i];
-        }
+        System.arraycopy(gpr, 0, this.gpr, 0, gpr.length);
 
         /* Save MBR to local MBR parameter */
         this.mbr = mbr;
-    }
-    /**
-     * This is the main call to process some arithmetic or logic operation
-     * @param code The code to perform the operation on
-     * @return returns some value to be stored
-     */
-    public short operate(short code) {
-        return 0;
     }
 
     /**
      * This is the main call to process some arithmetic or logic operation
      * @param code Name of the instruction to operate
+     * @param r The register of the instruction
+     * @param imm The immediate value of the operation
      *
      * @return returns condition code (0-3
      */
-    public int operate(String code, int r) {
-        int cc = -1;
+    public int operate(String code, int r, short imm) {
 
-        switch (code) {
-            case "AMR":
-                cc = MemToReg(r,false);
-                break;
-            case "SMR":
-                cc = MemToReg(r,true);
-                break;
-        }
-        return cc;
+        return switch (code) {
+            case "AMR" -> MemToReg(r, false);
+            case "SMR" -> MemToReg(r, true);
+            case "AIR" -> ImmToReg(r, false, imm);
+            case "SIR" -> ImmToReg(r, true, imm);
+            default -> -1;
+        };
     }
 
     /**
@@ -93,6 +75,48 @@ public class ALU {
             try {
                 gpr[r].load((short)(operand2+operand1));
             } catch (IOException e) {
+                /* TO DO: Convert to global ENUM */
+                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
+                cc = 0;
+            }
+        }
+        return cc;
+    }
+
+
+    /**
+     * Handles adding and subtracting immediate to register
+     * @param r the register
+     * @param imm the immediate value
+     * @param subtraction is the operation is a subtraction
+     * @return Returns the CC code.
+     */
+    protected int ImmToReg(int r, boolean subtraction, short imm){
+        int cc = -1;
+        short x = 31;
+
+        short operand2 = (short) gpr[r].read();
+
+        if(operand2 == 0){
+            try {
+                if (subtraction) {
+                    gpr[r].load((short) -imm);
+                } else {
+                    gpr[r].load(imm);
+                }
+            } catch (IOException e){
+                /* TO DO: Convert to global ENUM */
+                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
+                cc = 0;
+            }
+        } else {
+            try {
+                if (subtraction) {
+                    gpr[r].load((short)(operand2-imm));
+                } else {
+                    gpr[r].load((short)(operand2+imm));
+                }
+            }catch (IOException e){
                 /* TO DO: Convert to global ENUM */
                 /*        Also, verify when it is appropriate to return UNDERFLOW instead */
                 cc = 0;
