@@ -27,6 +27,11 @@ public class ControlUnit {
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
 
     /**
+     * Parameter to hold condition code
+     */
+    CC cc;
+
+    /**
      * Parameter to hold the Program Counter (PC) register
      */
     public Register pc;
@@ -70,6 +75,11 @@ public class ControlUnit {
     private final InstructionDecoder instructionDecoder;
 
     /**
+     * Parameter to hold the Arithmetic Logic Unit (ALU)
+     */
+    private final ALU alu;
+
+    /**
      * Parameter to hold system clock
      */
     private final Clock systemClock;
@@ -80,6 +90,11 @@ public class ControlUnit {
      */
     public ControlUnit() {
         System.out.println("Initializing control unit...");
+
+        /*
+         * Initialize condition code to OKAY
+         */
+        cc = CC.OKAY;
         
         /*
          * Create Program Counter (PC) register
@@ -136,6 +151,11 @@ public class ControlUnit {
         instructionDecoder = new InstructionDecoder();
 
         /*
+         * Create ALU
+         */
+        alu = new ALU(gpr,mbr);
+
+        /*
          * Create system clock and initialize to configured timeout
          */
         systemClock = new Clock(CLOCK_TIMEOUT);
@@ -175,7 +195,6 @@ public class ControlUnit {
      *
      * @param address Int with address in memory in which to load data
      * @param data Short with data to load into memory
-     * @throws IOException Throws exception if can not write to memory
      */
     public void writeDataToMemory (int address, short data) throws IOException {
         /* Load the address into MAR */
@@ -291,6 +310,27 @@ public class ControlUnit {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Processes addition/subtraction from memory to register (E.g. AMR or MBR)
+     *
+     * @param instruction Class with decode instruction
+     *
+     * @return An int with the condition code (0-3)
+     */
+    private void processMathMR(Instruction instruction) throws IOException {
+        int[] args;
+
+        /* Get instruction arguments */
+        args = instruction.getArguments();
+
+        /* Get data from memory into MBR */
+        getData(args[3],args[1],args[2]);
+
+        /* Call operate on ALU with Opcode and return condition code */
+
+        cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
+    }
     
 //    /**
 //     * Method to trigger program execution
@@ -320,7 +360,6 @@ public class ControlUnit {
      * memory, decoding it and executing it
      *
      * @return A boolean set to false whenever halt is received
-     * @throws IOException Passes any IO exceptions up the stack
      */
     public boolean singleStep() throws IOException {
         /* Get next instruction address from PC and convert to int */
@@ -361,21 +400,35 @@ public class ControlUnit {
             return(true);
         }
 
-        if(name.equals("LDR")){
-            System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
-            processLD(decodedInstruction, false);
-        } else if (name.equals("STR")) {
-            System.out.println("[ControlUnit::singleStep] Processing STR instruction...\n");
-            processST(decodedInstruction, false);
-        } else if (name.equals("LDA")) {
-            System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
-            processLDA(decodedInstruction);
-        } else if (name.equals("LDX")) {
-            System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
-            processLD(decodedInstruction, true);
-        } else if (name.equals("STX")) {
-            System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
-            processST(decodedInstruction, true);
+        switch (name) {
+            case "LDR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
+                processLD(decodedInstruction, false);
+            }
+            case "STR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STR instruction...\n");
+                processST(decodedInstruction, false);
+            }
+            case "LDA" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDA instruction...\n");
+                processLDA(decodedInstruction);
+            }
+            case "LDX" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDX instruction...\n");
+                processLD(decodedInstruction, true);
+            }
+            case "STX" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STX instruction...\n");
+                processST(decodedInstruction, true);
+            }
+            case "AMR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AMR instruction...\n");
+                processMathMR(decodedInstruction);
+            }
+            case "SMR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SMR instruction...\n");
+                processMathMR(decodedInstruction);
+            }
         }
 
         short count = (short)pc.read();
