@@ -1,6 +1,7 @@
 package com.csci6461;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * This holds all processes in the ALU
@@ -15,6 +16,44 @@ public class ALU {
      * Parameter to hold the Memory Buffer Register (MBR)
      */
     public Register mbr;
+
+    /**
+     * This method checks the result of addition or subtraction and returns the appropriate
+     * Condition Code if overflow or underflow occured
+     *
+     * @param operand1 Short with value of first operand of add or subtract operation
+     * @param operand2 Short with value of second operand of add or subtract operation
+     * @param result Short with result of add or subtract operation
+     *
+     * @return Returns a CC enumerator object set to CC.OKAY if no error condition was
+     *         detected or CC.OVERFLOW or CC.UNDERFLOW if overflow/underflow occurred
+     */
+    private CC getAddSubtractConditionCode(short operand1, short operand2, short result, boolean subtract) {
+        CC cc = CC.OKAY;
+
+        System.out.printf("[ALU::getAddSubtractConditionCode] Inputs: op1 = %d, op2 = %d, result = %d, subtract = %b\n",
+                operand1, operand2, result, subtract);
+
+        /* Invert operand1 if this is subtraction since detection algorithm works for sum */
+        if (subtract) {
+            operand1 *= -1;
+        }
+
+        /* Do logical XOR of each operand with the result */
+        short test1 = (short) (operand1 ^ result);
+        short test2 = (short) (operand2 ^ result);
+
+        System.out.printf("[ALU::getAddSubtractConditionCode] XOR results: tes1 = %d, test2 = %d\n",
+                test1, test2);
+
+        /* If logical AND of XOR results above is negative, then overflow occurred */
+        if ((test1 & test2) < 0) {
+            System.out.println("\n[ALU::getAddSubtractConditionCode] Overflow detected!\n");
+            cc = CC.OVERFLOW;
+        }
+
+        return cc;
+    }
 
     /**
      * Construction for the Arithmetic Logic Unit (ALU) class
@@ -39,16 +78,16 @@ public class ALU {
      * @param r The register of the instruction
      * @param imm The immediate value of the operation
      *
-     * @return returns condition code (0-3
+     * @return returns condition code (0-3)
      */
-    public int operate(String code, int r, short imm) {
+    public CC operate(String code, int r, short imm) {
 
         return switch (code) {
             case "AMR" -> MemToReg(r, false);
             case "SMR" -> MemToReg(r, true);
             case "AIR" -> ImmToReg(r, false, imm);
             case "SIR" -> ImmToReg(r, true, imm);
-            default -> -1;
+            default -> CC.OKAY;
         };
     }
 
@@ -58,26 +97,33 @@ public class ALU {
      * @param subtraction Is this operation a subtraction (adding a negative number)
      * @return Returns an int with condition code
      */
-    protected int MemToReg(int r, boolean subtraction){
-        int cc = -1;
+    protected CC MemToReg(int r, boolean subtraction){
+        CC cc = CC.OKAY;
         short operand1 = (short) mbr.read();
         short operand2 = (short) gpr[r].read();
+
+        System.out.printf("[ALU::MemToReg] Operands are: %d, %d; Subtraction flag is: %b\n",
+                operand1, operand2, subtraction);
 
         if (subtraction) {
             try {
                 gpr[r].load((short)(operand2-operand1));
+
+                /* Check result for overflow */
+                cc = getAddSubtractConditionCode(operand1,operand2,(short)gpr[r].read(),true);
             } catch (IOException e) {
-                /* TO DO: Convert to global ENUM */
-                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
-                cc = 0;
+                System.out.printf("Exception while loading result of subtraction into GPR%d\n",r);
+                e.printStackTrace();
             }
         } else {
             try {
                 gpr[r].load((short)(operand2+operand1));
+
+                /* Check result for overflow */
+                cc = getAddSubtractConditionCode(operand1,operand2,(short)gpr[r].read(),false);
             } catch (IOException e) {
-                /* TO DO: Convert to global ENUM */
-                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
-                cc = 0;
+                System.out.printf("Exception while loading result of addition into GPR%d\n",r);
+                e.printStackTrace();
             }
         }
         return cc;
@@ -91,8 +137,8 @@ public class ALU {
      * @param subtraction is the operation is a subtraction
      * @return Returns the CC code.
      */
-    protected int ImmToReg(int r, boolean subtraction, short imm){
-        int cc = -1;
+    protected CC ImmToReg(int r, boolean subtraction, short imm){
+        CC cc = CC.OKAY;
         short x = 31;
 
         short operand2 = (short) gpr[r].read();
@@ -104,10 +150,10 @@ public class ALU {
                 } else {
                     gpr[r].load(imm);
                 }
+                cc = getAddSubtractConditionCode(imm,operand2,(short) gpr[r].read(),subtraction);
             } catch (IOException e){
-                /* TO DO: Convert to global ENUM */
-                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
-                cc = 0;
+                System.out.printf("Error while loading result of addition/subtraction to GPR%d", r);
+                e.printStackTrace();
             }
         } else {
             try {
@@ -116,10 +162,10 @@ public class ALU {
                 } else {
                     gpr[r].load((short)(operand2+imm));
                 }
-            }catch (IOException e){
-                /* TO DO: Convert to global ENUM */
-                /*        Also, verify when it is appropriate to return UNDERFLOW instead */
-                cc = 0;
+                cc = getAddSubtractConditionCode(imm,operand2,(short) gpr[r].read(),subtraction);
+            } catch (IOException e){
+                System.out.printf("Error while loading result of addition/subtraction to GPR%d", r);
+                e.printStackTrace();
             }
         }
         return cc;
