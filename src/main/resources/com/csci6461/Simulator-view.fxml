@@ -451,5 +451,35 @@
       </Label>
       <Button layoutX="876.0" layoutY="664.0" mnemonicParsing="false" onAction="#onTranslateClick" text="Translate" />
       <Button layoutX="1016.0" layoutY="619.0" mnemonicParsing="false" onAction="#onRunClick" prefHeight="35.0" prefWidth="37.0" text="Run" />
+      <CheckBox fx:id="ch_under" disable="true" layoutX="1027.0" layoutY="266.0" mnemonicParsing="false" styleClass="reg-bit" />
+      <Label layoutX="1000.0" layoutY="242.0" text="Underflow">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <CheckBox fx:id="ch_over" disable="true" layoutX="1102.0" layoutY="266.0" mnemonicParsing="false" styleClass="reg-bit" />
+      <Label layoutX="1080.0" layoutY="242.0" text="Overflow">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <CheckBox fx:id="ch_div" disable="true" layoutX="1155.0" layoutY="266.0" mnemonicParsing="false" styleClass="reg-bit" />
+      <Label layoutX="1146.0" layoutY="242.0" text="Div 0">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <CheckBox fx:id="ch_eq" disable="true" layoutX="1199.0" layoutY="266.0" mnemonicParsing="false" styleClass="reg-bit" />
+      <Label layoutX="1199.0" layoutY="242.0" text="EQ">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <Label layoutX="907.0" layoutY="264.0" text="Control Code">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <Button fx:id="btnStep1" layoutX="1078.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStepClick" prefHeight="35.0" prefWidth="48.0" text="Store" />
    </children>
 </Pane>

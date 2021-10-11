@@ -74,6 +74,8 @@ public class ControlUnit {
      */
     private final ALU alu;
 
+    public CC controlCode;
+
     /**
      * Parameter to hold system clock
      */
@@ -149,6 +151,8 @@ public class ControlUnit {
          * Create system clock and initialize to configured timeout
          */
         systemClock = new Clock(CLOCK_TIMEOUT);
+
+        controlCode = CC.OKAY;
     }
 
     /**

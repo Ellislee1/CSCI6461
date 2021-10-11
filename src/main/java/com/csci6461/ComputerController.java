@@ -122,6 +122,9 @@ public class ComputerController {
     @FXML
     private Label lblCode;
 
+    @FXML
+    private CheckBox ch_under, ch_over, ch_div, ch_eq;
+
     /**
      * Array for the toggle buttons
      */
@@ -433,8 +436,23 @@ public class ComputerController {
         setUIElem(cu.mar,marController);
         setUIElem(cu.ir,irController);
 
+        setControlCode(cu.controlCode);
         // Memory Fault register
         // setUIElem(cu.mfr,mfrController);
+    }
+
+    private void setControlCode(CC code){
+        ch_over.setSelected(false);
+        ch_under.setSelected(false);
+        ch_div.setSelected(false);
+        ch_eq.setSelected(false);
+
+        switch (code){
+            case OVERFLOW -> ch_over.setSelected(true);
+            case UNDERFLOW -> ch_under.setSelected(true);
+            case DIVZERO -> ch_div.setSelected(true);
+            case EQUALORNOT -> ch_eq.setSelected(true);
+        }
     }
 
     /**
