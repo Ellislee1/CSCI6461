@@ -480,6 +480,7 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
-      <Button fx:id="btnStep1" layoutX="1078.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStepClick" prefHeight="35.0" prefWidth="48.0" text="Store" />
+      <Button fx:id="btnStore" layoutX="1078.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStoreClick" prefHeight="35.0" prefWidth="48.0" text="Store" />
+      <Button fx:id="btnStep11" layoutX="1073.0" layoutY="659.0" mnemonicParsing="false" onAction="#onStorePClick" prefHeight="35.0" prefWidth="60.0" text="Store +" />
    </children>
 </Pane>

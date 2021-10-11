@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -426,6 +427,27 @@ public class ComputerController {
     }
 
     /**
+     * Store the recorded value into the memory address in the MAR
+     */
+    @FXML
+    protected void onStoreClick() throws IOException {
+        short val = to_short(translateBits());
+
+        cu.writeDataToMemory(val);
+        updateUI();
+    }
+
+    /**
+     * Store the recorded value into the memory address in the MAR and increment the MAR by 1.
+     */
+    @FXML
+    protected void onStorePClick() throws IOException {
+        onStoreClick();
+        cu.mar.load((short) (cu.mar.read()+1));
+        updateUI();
+    }
+
+    /**
      * Update the entire UI after a step
      */
     private void updateUI() {
@@ -441,6 +463,10 @@ public class ComputerController {
         // setUIElem(cu.mfr,mfrController);
     }
 
+    /**
+     * Used to set the control code UI
+     * @param code the current control code
+     */
     private void setControlCode(CC code){
         ch_over.setSelected(false);
         ch_under.setSelected(false);
@@ -518,4 +544,23 @@ public class ComputerController {
         }
     }
 
+    private short to_short (boolean[] array){
+        String val = bits(array);
+
+        System.out.println(val);
+        return (short) Integer.parseInt(val,2);
+    }
+
+    private String bits(boolean[] array) {
+        StringBuilder val = new StringBuilder();
+
+        for(int i = 15; i>=0; i--){
+            if(array[i]){
+                val.insert(0, "1");
+            } else{
+                val.insert(0, "0");
+            }
+        }
+        return val.toString();
+    }
 }
