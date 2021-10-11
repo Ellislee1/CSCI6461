@@ -205,13 +205,8 @@ public class ControlUnit {
      * This method writes data to a memory address; It copies the data to MBR and the address to MAR
      * and then calls the method in memory to write the data,
      *
-     * @param data Short with data to load into memory
      */
-    public void writeDataToMemory (short data) throws IOException {
-
-        /* Load data to MBR */
-        mbr.load(data);
-
+    public void writeDataToMemory () throws IOException {
         /* Call method to load data on MBR into memory */
         mainMemory.write();
     }

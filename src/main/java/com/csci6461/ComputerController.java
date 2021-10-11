@@ -431,9 +431,8 @@ public class ComputerController {
      */
     @FXML
     protected void onStoreClick() throws IOException {
-        short val = to_short(translateBits());
 
-        cu.writeDataToMemory(val);
+        cu.writeDataToMemory();
         updateUI();
     }
 
