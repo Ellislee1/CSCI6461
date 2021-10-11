@@ -549,24 +549,4 @@ public class ComputerController {
             x.setSelected(false);
         }
     }
-
-    private short to_short (boolean[] array){
-        String val = bits(array);
-
-        System.out.println(val);
-        return (short) Integer.parseInt(val,2);
-    }
-
-    private String bits(boolean[] array) {
-        StringBuilder val = new StringBuilder();
-
-        for(int i = 15; i>=0; i--){
-            if(array[i]){
-                val.insert(0, "1");
-            } else{
-                val.insert(0, "0");
-            }
-        }
-        return val.toString();
-    }
 }
