@@ -9,6 +9,7 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -121,6 +122,9 @@ public class ComputerController {
      */
     @FXML
     private Label lblCode;
+
+    @FXML
+    private CheckBox ch_under, ch_over, ch_div, ch_eq;
 
     /**
      * Array for the toggle buttons
@@ -423,6 +427,33 @@ public class ComputerController {
     }
 
     /**
+     * Store the recorded value into the memory address in the MAR
+     */
+    @FXML
+    protected void onStoreClick() throws IOException {
+
+        cu.writeDataToMemory();
+        updateUI();
+    }
+
+    /**
+     * Store the recorded value into the memory address in the MAR and increment the MAR by 1.
+     */
+    @FXML
+    protected void onStorePClick() throws IOException {
+        onStoreClick();
+        cu.mar.load((short) (cu.mar.read()+1));
+        updateUI();
+    }
+
+    @FXML
+    protected void onLoadClick() throws IOException {
+        cu.mbr.load(cu.loadDataFromMemory(cu.mar.read()));
+        setUIElem(cu.mbr,mbrController);
+        updateUI();
+    }
+
+    /**
      * Update the entire UI after a step
      */
     private void updateUI() {
@@ -433,8 +464,27 @@ public class ComputerController {
         setUIElem(cu.mar,marController);
         setUIElem(cu.ir,irController);
 
+        setControlCode(cu.controlCode);
         // Memory Fault register
         // setUIElem(cu.mfr,mfrController);
+    }
+
+    /**
+     * Used to set the control code UI
+     * @param code the current control code
+     */
+    private void setControlCode(CC code){
+        ch_over.setSelected(false);
+        ch_under.setSelected(false);
+        ch_div.setSelected(false);
+        ch_eq.setSelected(false);
+
+        switch (code){
+            case OVERFLOW -> ch_over.setSelected(true);
+            case UNDERFLOW -> ch_under.setSelected(true);
+            case DIVZERO -> ch_div.setSelected(true);
+            case EQUALORNOT -> ch_eq.setSelected(true);
+        }
     }
 
     /**
@@ -500,4 +550,23 @@ public class ComputerController {
         }
     }
 
+    private short to_short (boolean[] array){
+        String val = bits(array);
+
+        System.out.println(val);
+        return (short) Integer.parseInt(val,2);
+    }
+
+    private String bits(boolean[] array) {
+        StringBuilder val = new StringBuilder();
+
+        for(int i = 15; i>=0; i--){
+            if(array[i]){
+                val.insert(0, "1");
+            } else{
+                val.insert(0, "0");
+            }
+        }
+        return val.toString();
+    }
 }
