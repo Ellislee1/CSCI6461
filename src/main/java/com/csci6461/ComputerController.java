@@ -446,6 +446,13 @@ public class ComputerController {
         updateUI();
     }
 
+    @FXML
+    protected void onLoadClick() throws IOException {
+        cu.mbr.load(cu.loadDataFromMemory(cu.mar.read()));
+        setUIElem(cu.mbr,mbrController);
+        updateUI();
+    }
+
     /**
      * Update the entire UI after a step
      */
