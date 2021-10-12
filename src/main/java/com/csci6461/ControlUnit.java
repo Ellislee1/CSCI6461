@@ -79,6 +79,8 @@ public class ControlUnit {
      */
     private final ALU alu;
 
+    public CC controlCode;
+
     /**
      * Parameter to hold system clock
      */
@@ -159,6 +161,8 @@ public class ControlUnit {
          * Create system clock and initialize to configured timeout
          */
         systemClock = new Clock(CLOCK_TIMEOUT);
+
+        controlCode = CC.OKAY;
     }
 
     /**
@@ -203,6 +207,16 @@ public class ControlUnit {
         /* Load data to MBR */
         mbr.load(data);
 
+        /* Call method to load data on MBR into memory */
+        mainMemory.write();
+    }
+
+    /**
+     * This method writes data to a memory address; It copies the data to MBR and the address to MAR
+     * and then calls the method in memory to write the data,
+     *
+     */
+    public void writeDataToMemory () throws IOException {
         /* Call method to load data on MBR into memory */
         mainMemory.write();
     }
