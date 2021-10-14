@@ -20,7 +20,7 @@ public class Memory {
     * Member variable to hold data array, which will be initialized by the 
     * constructor
     */ 
-    private short[] data;
+    protected short[] data;
     /**
      * Total size of the memory array in 16-bit words
      */
