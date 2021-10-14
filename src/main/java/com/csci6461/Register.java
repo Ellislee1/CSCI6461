@@ -1,9 +1,9 @@
-/**
+/*
  * This file implements the register class for the CSCI 6461 project
  */
 package com.csci6461;
 
-/**
+/*
  * Import IOException, Arrays and BitSet class
  */
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class Register extends CBitSet {
     /**
      * Name of the register being implemented
      */
-    private String name;
+    private final String name;
     
     /**
      * Default constructor initializes name and size
@@ -47,7 +47,7 @@ public class Register extends CBitSet {
      * @return this register's size in bits
      */
     public int getSize() {
-        return super.get_size();
+        return this.get_size();
     }
 
     /**
@@ -59,7 +59,7 @@ public class Register extends CBitSet {
         System.out.printf("[Register::load] Input data for register %s: %s\n",
                 name, Arrays.toString(data));
 
-        super.set_bits(data);
+        this.set_bits(data);
     }
 
     /**
@@ -90,20 +90,20 @@ public class Register extends CBitSet {
         boolean overflow = false;
 
         /* Zero out bitSet before beginning */
-        super.set_zero();
+        this.set_zero();
 
         for (int i = 0; i < bits.length; i++) {
             /* Check for overflow */
-            if (bits[i] >= super.get_size()) {
+            if (bits[i] >= this.get_size()) {
                 overflow = true;
             } else {
-                super.set(bits[i]);
+                this.set(bits[i]);
             }
         }
 
         /* Throw exception if there was overflow */
         if (overflow) {
-            String error = String.format("Overflow on register %s",name);
+            String error = String.format("Overflow on register %s", name);
             throw new IOException(error);
         }
     }
@@ -115,15 +115,15 @@ public class Register extends CBitSet {
      * @return array of ints with position of bits set in register
      */
     public int[] getSetBits() {
-        if(super.cardinality() <=0){
+        if(this.cardinality() <=0){
             return null;
         }
 
         /* Get string representation of bit set */
-        String bits = String.format("%16s", Integer.toBinaryString(super.read())).replace(' ', '0');;
+        String bits = String.format("%16s", Integer.toBinaryString(this.read())).replace(' ', '0');
         System.out.printf("[Register::getSetBits] Have string representation from parent: %s\n", bits);
 
-        return super.get_set_bits();
+        return this.get_set_bits();
     }
 
     /**

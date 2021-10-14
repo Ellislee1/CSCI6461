@@ -32,6 +32,6 @@ public class ComputerSimulation extends Application {
      * @param args Any arguments passed to the program.
      */
     public static void main(String[] args) {
-        launch();
+        Application.launch();
     }
 }

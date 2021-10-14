@@ -13,7 +13,7 @@ public abstract class Instruction {
     /**
      * Parameter to hold instruction's name
      */
-    private String name;
+    private final String name;
 
     /**
      * Parameter to hold full un-decoded instruction

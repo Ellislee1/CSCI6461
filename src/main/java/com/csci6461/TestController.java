@@ -61,7 +61,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        boolean[] address = get_bool_array(Integer.toBinaryString((int) testAddress));
+        boolean[] address = get_bool_array(Integer.toBinaryString(testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);
@@ -73,7 +73,7 @@ public class TestController {
         }
 
         /* Write memory address 6 to slot 1 for machine fault */
-        short fault = 6;
+        final short fault = 6;
 //        cu.load(1, fault);
         cu.writeDataToMemory(1, fault);
 
@@ -108,7 +108,7 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = get_bool_array(Integer.toBinaryString((int) testAddress));
+        address = get_bool_array(Integer.toBinaryString(testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);

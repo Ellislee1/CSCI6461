@@ -20,11 +20,11 @@ public class Memory {
     * Member variable to hold data array, which will be initialized by the 
     * constructor
     */ 
-    private short[] data;
+    private final short[] data;
     /**
      * Total size of the memory array in 16-bit words
      */
-    private int size;
+    private final int size;
     /**
      * Parameter to hold Memory Address Register (MAR) to hold address for read/write
      */
@@ -118,10 +118,10 @@ public class Memory {
         System.out.println("|   ADDRESS   |    VALUE    |");
         System.out.println("|-------------|-------------|");
 
-        for (int i=0; i<data.length;i++){
+        for (int i = 0; i< data.length; i++){
             if (data[i]!=0){
-                String pos = "0x"+formatHex(Integer.toHexString(i & 0xffff)).toUpperCase();
-                String val = "0x"+formatHex(Integer.toHexString(data[i] & 0xffff)).toUpperCase();
+                String pos = "0x"+ formatHex(Integer.toHexString(i & 0xffff)).toUpperCase();
+                String val = "0x"+ formatHex(Integer.toHexString(data[i] & 0xffff)).toUpperCase();
                 System.out.println("|   "+pos+"    |   "+val+"    |");
             }
         }

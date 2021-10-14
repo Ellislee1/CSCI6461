@@ -16,7 +16,7 @@ public class MathMR extends Instruction{
      */
     @Override
     int[] getArguments() {
-        String bits = String.format("%16s", Integer.toBinaryString(super.getInstruction())).replace(' ', '0');
+        String bits = String.format("%16s", Integer.toBinaryString(this.getInstruction())).replace(' ', '0');
         bits = bits.substring(bits.length()-16);
         System.out.printf("[MemOp::getArguments] Full instruction %s\n",
                 bits);

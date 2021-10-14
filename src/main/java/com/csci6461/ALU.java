@@ -93,7 +93,7 @@ public class ALU {
      */
     protected int ImmToReg(int r, boolean subtraction, short imm){
         int cc = -1;
-        short x = 31;
+        final short x = 31;
 
         short operand2 = (short) gpr[r].read();
 
