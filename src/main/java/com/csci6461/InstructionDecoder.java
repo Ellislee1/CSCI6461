@@ -7,14 +7,14 @@ public class InstructionDecoder {
     /**
      * Parameter to hold decoder config
      */
-    private DecoderConfig config;
+    private final DecoderConfig config;
 
     /**
      * Default constructor
      */
     public InstructionDecoder() {
         /* Instantiate decoder config */
-        config = new DecoderConfig();
+        this.config = new DecoderConfig();
     }
 
     /**
@@ -25,9 +25,9 @@ public class InstructionDecoder {
      * @return A string containing the requested bits or the whole
      *         binary word (up to 16 bits) if index parameters are null
      */
-    public String getBits(short word) {
-        String s = Integer.toBinaryString(word);
-        String bits = String.format("%16s", s).replace(' ', '0');
+    public String getBits(final short word) {
+        final String s = Integer.toBinaryString(word);
+        final String bits = String.format("%16s", s).replace(' ', '0');
 
         return bits.substring(bits.length()-16);
     }
@@ -39,12 +39,12 @@ public class InstructionDecoder {
      *
      * @return Int with the instruction's Opcode
      */
-    public int getOpCode(short word) {
+    public int getOpCode(final short word) {
         /* First convert the input short into a 16-bit binary String representation */
-        String bits = getBits(word);
+        final String bits = this.getBits(word);
 
         /* Extract the top 6-bits of the binary Strings */
-        String opcode = bits.substring(0,6);
+        final String opcode = bits.substring(0,6);
         System.out.printf("Extracted Opcode: Instruction = %s, Opcode = %s\n",
                 bits, opcode);
 
@@ -56,13 +56,13 @@ public class InstructionDecoder {
      * Method to decode instruction
      * @param word The instruction word to decode
      */
-    public Instruction decode(short word) {
+    public Instruction decode(final short word) {
         /* First, extract Opcode from instructions we know how to process */
-        int opcode = getOpCode(word);
+        final int opcode = this.getOpCode(word);
         System.out.printf("Extracted opcode: %s\n", opcode);
 
         /* Look-up instruction by Opcode on decoder config */
-        Instruction instruction = config.getInstruction(opcode);
+        final Instruction instruction = this.config.getInstruction(opcode);
         if (instruction != null) {
             System.out.printf("[InstructionDecoder::decode] Have the param decoder class for Opcode %s: %s\n",
                     Integer.toOctalString(opcode), instruction.getName());

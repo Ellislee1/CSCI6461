@@ -17,7 +17,7 @@ public class Register extends CBitSet {
     /**
      * Name of the register being implemented
      */
-    private String name;
+    private final String name;
     
     /**
      * Default constructor initializes name and size
@@ -25,11 +25,11 @@ public class Register extends CBitSet {
      * @param n Name of the register being created
      * @param s Register size in bits
      */
-    public Register(String n, int s) {
+    public Register(final String n, final int s) {
         super(s);
         
         System.out.printf("Creating register %s with size %s.\n", n, s);
-        name = n;
+        this.name = n;
     }
     
     /**
@@ -38,7 +38,7 @@ public class Register extends CBitSet {
      * @return this register's name
      */
     public String getName() {
-        return name;
+        return this.name;
     }
     
     /**
@@ -47,7 +47,7 @@ public class Register extends CBitSet {
      * @return this register's size in bits
      */
     public int getSize() {
-        return super.get_size();
+        return get_size();
     }
 
     /**
@@ -55,11 +55,11 @@ public class Register extends CBitSet {
      * @param data A boolean array
      * @throws IOException Throws an IO Exception is item can not load
      */
-    public void load(boolean[] data) throws IOException{
+    public void load(final boolean[] data) throws IOException{
         System.out.printf("[Register::load] Input data for register %s: %s\n",
-                name, Arrays.toString(data));
+                this.name, Arrays.toString(data));
 
-        super.set_bits(data);
+        set_bits(data);
     }
 
     /**
@@ -68,8 +68,8 @@ public class Register extends CBitSet {
      * @param data Short containing data word to load
      * @throws IOException Throws a IO exception if item can not be loaded
      */
-    public void load(short data) throws IOException {
-        load(get_bool_array(Integer.toBinaryString(0xffff & data)));
+    public void load(final short data) throws IOException {
+        this.load(this.get_bool_array(Integer.toBinaryString(0xffff & data)));
     }
 
     /**
@@ -86,24 +86,24 @@ public class Register extends CBitSet {
      *
      * @throws  IOException If setting bits causes overflow
      */
-    public void setBits(int[] bits) throws IOException {
+    public void setBits(final int[] bits) throws IOException {
         boolean overflow = false;
 
         /* Zero out bitSet before beginning */
-        super.set_zero();
+        set_zero();
 
         for (int i = 0; i < bits.length; i++) {
             /* Check for overflow */
-            if (bits[i] >= super.get_size()) {
+            if (bits[i] >= get_size()) {
                 overflow = true;
             } else {
-                super.set(bits[i]);
+                set(bits[i]);
             }
         }
 
         /* Throw exception if there was overflow */
         if (overflow) {
-            String error = String.format("Overflow on register %s",name);
+            final String error = String.format("Overflow on register %s", this.name);
             throw new IOException(error);
         }
     }
@@ -115,15 +115,15 @@ public class Register extends CBitSet {
      * @return array of ints with position of bits set in register
      */
     public int[] getSetBits() {
-        if(super.cardinality() <=0){
+        if(cardinality() <=0){
             return null;
         }
 
         /* Get string representation of bit set */
-        String bits = String.format("%16s", Integer.toBinaryString(super.read())).replace(' ', '0');;
+        final String bits = String.format("%16s", Integer.toBinaryString(read())).replace(' ', '0');
         System.out.printf("[Register::getSetBits] Have string representation from parent: %s\n", bits);
 
-        return super.get_set_bits();
+        return get_set_bits();
     }
 
     /**
@@ -131,10 +131,10 @@ public class Register extends CBitSet {
      * @param binaryString The binary string to convert
      * @return the boolean array.
      */
-    private boolean[] get_bool_array(String binaryString) {
+    private boolean[] get_bool_array(final String binaryString) {
 
-        char[] binary = binaryString.toCharArray(); // Convert to character array
-        boolean[] data = new boolean[binary.length]; // Create a new boolean array
+        final char[] binary = binaryString.toCharArray(); // Convert to character array
+        final boolean[] data = new boolean[binary.length]; // Create a new boolean array
 
         // Loop through array and flip bits where a 1 is present
         for(int x=0; x<binary.length;x++){

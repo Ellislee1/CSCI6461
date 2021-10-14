@@ -20,11 +20,11 @@ public class Memory {
     * Member variable to hold data array, which will be initialized by the 
     * constructor
     */ 
-    private short[] data;
+    private final short[] data;
     /**
      * Total size of the memory array in 16-bit words
      */
-    private int size;
+    private final int size;
     /**
      * Parameter to hold Memory Address Register (MAR) to hold address for read/write
      */
@@ -44,17 +44,17 @@ public class Memory {
      * 
      * @throws IOException If an invalid memory size is specified
      */
-    public Memory(int s, Register mar, Register mbr) throws IOException {
+    public Memory(final int s, final Register mar, final Register mbr) throws IOException {
         if (s <= 0) {
-            String error = String.format(
+            final String error = String.format(
                "Invalid memory size: %d; Memory size must greater than zero.",
                 s);
             throw new IOException(error);
         }
         
         /* Save size and initalize data to new array of specified size */
-        size = s;
-        data = new short[size];
+        this.size = s;
+        this.data = new short[this.size];
 
         /* Set MAR and MBR parameters */
         this.mar = mar;
@@ -68,18 +68,18 @@ public class Memory {
      */
     public void write() throws IOException {
         /* Get the address from the MAR */
-        short address = (short) mar.read();
+        final short address = (short) this.mar.read();
 
         /* Check for out of bounds address */
-        if (address < 0 || address >= size) {
-            String error = String.format(
+        if (address < 0 || address >= this.size) {
+            final String error = String.format(
                     "Invalid memory address: %d; Addresses must be between 0 and %d.",
-                    address, size);
+                    address, this.size);
             throw new IOException(error);
         }
 
         /* Copy value in MBR into the specified address in memory */
-        data[address] = (short) mbr.read();
+        this.data[address] = (short) this.mbr.read();
     }
 
     /**
@@ -89,21 +89,21 @@ public class Memory {
      */
     public void read() throws IOException {
         /* Get the address from MAR */
-        int address = mar.read();
+        final int address = this.mar.read();
 
-        if (address < 0 || address >= size) {
-            String error = String.format(
+        if (address < 0 || address >= this.size) {
+            final String error = String.format(
                     "Invalid memory address: %d; Addresses must be between 0 and %d.",
-                    address, size);
+                    address, this.size);
             throw new IOException(error);
         }
         /* Return data at specified location */
-        short word = data[address];
+        final short word = this.data[address];
         System.out.printf("Read data word from memory: %s\n",
                 Integer.toBinaryString(0xffff & word));
 
         /* Copy retrieved word into MBR */
-        mbr.load(word);
+        this.mbr.load(word);
     }
 
     /**
@@ -118,10 +118,10 @@ public class Memory {
         System.out.println("|   ADDRESS   |    VALUE    |");
         System.out.println("|-------------|-------------|");
 
-        for (int i=0; i<data.length;i++){
-            if (data[i]!=0){
-                String pos = "0x"+formatHex(Integer.toHexString(i & 0xffff)).toUpperCase();
-                String val = "0x"+formatHex(Integer.toHexString(data[i] & 0xffff)).toUpperCase();
+        for (int i = 0; i< this.data.length; i++){
+            if (this.data[i]!=0){
+                final String pos = "0x"+ this.formatHex(Integer.toHexString(i & 0xffff)).toUpperCase();
+                final String val = "0x"+ this.formatHex(Integer.toHexString(this.data[i] & 0xffff)).toUpperCase();
                 System.out.println("|   "+pos+"    |   "+val+"    |");
             }
         }
@@ -134,7 +134,7 @@ public class Memory {
      * @param s The unformatted string
      * @return Returns the formatted string
      */
-    private String formatHex(String s) {
+    private String formatHex(final String s) {
         String newS = s;
         if (s.length() < 4) {
             for (int i = 0; i < 4 - s.length(); i++){
@@ -150,8 +150,8 @@ public class Memory {
      */
     public int get_first_code() {
         // Loop through memory array and look for the first non-empty element after 5
-        for(int i = 6; i< size; i++){
-            if(this.data[i] != 0){
+        for(int i = 6; i< this.size; i++){
+            if(data[i] != 0){
                 return i; // return first instruction
             }
         }
