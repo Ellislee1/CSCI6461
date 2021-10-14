@@ -38,6 +38,7 @@ public class DecoderConfig {
         instructions.put(005, new MathMR("SMR"));
         instructions.put(010, new MemOp("JZ"));
         instructions.put(011, new MemOp("JNE"));
+        instructions.put(012, new MemOp("JNE"));
     }
 
     /**

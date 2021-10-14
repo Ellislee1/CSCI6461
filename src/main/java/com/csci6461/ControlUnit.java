@@ -76,6 +76,8 @@ public class ControlUnit {
 
     public CC controlCode;
 
+    private int active_cc;
+
     /**
      * Parameter to hold system clock
      */
@@ -153,6 +155,8 @@ public class ControlUnit {
         systemClock = new Clock(CLOCK_TIMEOUT);
 
         controlCode = CC.OKAY;
+
+        active_cc = -1;
     }
 
     /**
@@ -345,12 +349,13 @@ public class ControlUnit {
      */
     private boolean processZero(Instruction instruction, boolean ifZero) throws IOException {
         int[] args;
-        args = instruction.getArguments();
+        args = instruction.getArguments(); // Get arguments
 
-        short effectiveAdr = calculateEA(args[3],args[1],args[2]);
+        short effectiveAdr = calculateEA(args[3],args[1],args[2]); // convert to effective address
         int register = args[0];
         int c = gpr[register].read();
 
+        // Run the test to see if the value is equal to zero or not
         if(c == 0 && ifZero) {
             pc.load(effectiveAdr);
             return false;
@@ -361,29 +366,26 @@ public class ControlUnit {
         return true;
 
     }
-    
-//    /**
-//     * Method to trigger program execution
-//     *
-//     * @throws InterruptedException When current thread is interrupted by another thread
-//     */
-//    public void run() throws InterruptedException {
-//        /*
-//         * Parameter to start/stop program execution
-//         */
-//        boolean aContinue = true;
-//        while (aContinue) {
-//
-//            systemClock.waitForNextTick();
-//
-//            try {
-//                aContinue = singleStep();
-//            } catch (IOException ioe) {
-//                System.out.println("Error during step execution");
-//                ioe.printStackTrace();
-//            }
-//        }
-//    }
+
+    /**
+     * Process the check for the condition code
+     * @param instruction the decoded instruction
+     * @return returns if the program counter should be updated
+     * @throws IOException throws IO exception
+     */
+    private boolean processjumpCC(Instruction instruction) throws IOException {
+        int[] args;
+        args = instruction.getArguments(); // Get arguments
+        short effectiveAdr = calculateEA(args[3],args[1],args[2]); // convert to effective address
+
+        int cc = args[0];
+
+        if (cc == this.active_cc){
+            pc.load(effectiveAdr);
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Method to execute single step by getting the next instruction in
@@ -468,6 +470,10 @@ public class ControlUnit {
             case "JNE" -> {
                 System.out.println("[ControlUnit::singleStep] Processing JNE instruction...\n");
                 increment_pc = processZero(decodedInstruction, false);
+            }
+            case "JCC" -> {
+                System.out.println("[ControlUnit::singleStep] Processing JCC instruction...\n");
+                increment_pc = processjumpCC(decodedInstruction);
             }
         }
 
