@@ -388,6 +388,21 @@ public class ControlUnit {
     }
 
     /**
+     * Processes an unconditional jump to an address
+     * @param instruction the decoded instruction
+     * @return Returns that the program counter should not be updated
+     * @throws IOException Throws an IO exception
+     */
+    private boolean processJMA(Instruction instruction) throws IOException {
+        int[] args;
+        args = instruction.getArguments(); // Get arguments
+        short effectiveAdr = calculateEA(args[3],args[1],args[2]); // convert to effective address
+
+        pc.load(effectiveAdr);
+        return false;
+    }
+
+    /**
      * Method to execute single step by getting the next instruction in
      * memory, decoding it and executing it
      *
