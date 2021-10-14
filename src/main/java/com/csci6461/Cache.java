@@ -39,6 +39,10 @@ public class Cache extends Memory{
      */
     private short offsetMask = 0;
     /**
+     * Parameter to hold list of tags so we can implement replacement logic
+     */
+    private short[] tagList;
+    /**
      * The cache class constructor creates a new two-dimensional data storage array
      * of the configured size for the cache storage and calls the superclass constructor.
      * to initialize the memory
@@ -74,6 +78,8 @@ public class Cache extends Memory{
         }
         System.out.printf("[Cache::Cache] Offset mask is: %s\n", Integer.toBinaryString((int)offsetMask));
 
+        /* Allocate storage for tag list */
+        tagList = new short[CACHE_SIZE];
     }
 
     /**
@@ -129,6 +135,41 @@ public class Cache extends Memory{
     }
 
     /**
+     * This method saves a block of memory into the Cache after a miss
+     *
+     * @param tag
+     */
+    private void saveToCache(short tag) {
+        int index;
+
+        /* Check if cache is full and do replacement processing */
+        int currentSize = cache.size();
+        if (currentSize == CACHE_SIZE) {
+            System.out.println("[Cache::saveToCache] Cache is full! Implementing replacement logic.");
+
+            /* Get a random line number to replace */
+            index = (int) (Math.random() * (CACHE_SIZE - 1));
+            System.out.printf("[Cache::saveToCache] Random replacement of line #%d with tag %s.\n"
+                    , index, Integer.toBinaryString((int) tagList[index]));
+
+            /* Get tag for that line from tag list and remove it from cache */
+            cache.remove(tagList[index]);
+        } else {
+            /* If cache is not full set the index corresponding to the current size of the cache */
+            index = currentSize;
+            System.out.printf("[Cache::saveToCache] Cache is not full; Setting tag index to %d",index);
+        }
+        /* Get block corresponding to current tag from memory */
+        short[] line = getMemoryBlock(tag);
+
+        /* Save memory block to cache */
+        cache.put((Short) tag, line);
+
+        /* Save tag to tag list for random replacement as needed */
+        tagList[index] = tag;
+    }
+
+    /**
      * This method overrides the main memory's read() method to look in cache before trying to
      * read from main memory
      *
@@ -163,11 +204,8 @@ public class Cache extends Memory{
             /* Call superclass read to get data from memory if not in cache */
             super.read();
 
-            /* Get block corresponding to current tag from memory */
-            line = getMemoryBlock(tag);
-
-            /* Save memory block to cache */
-            cache.put((Short) tag, line);
+            /* Save the block to the cache for future reads */
+            saveToCache(tag);
         }
     }
 }
