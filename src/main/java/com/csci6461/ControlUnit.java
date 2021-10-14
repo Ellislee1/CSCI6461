@@ -147,7 +147,7 @@ public class ControlUnit {
         /*
          * Create system clock and initialize to configured timeout
          */
-        /**
+        /*
          * Parameter to hold system clock
          */
         Clock systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
@@ -416,6 +416,26 @@ public class ControlUnit {
 
         // Run the test to see if the value is equal to zero or not
         if(c >= 0) {
+            this.pc.load(effectiveAdr);
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean processSOB(final Instruction instruction) throws IOException {
+        final int[] args;
+        args = instruction.getArguments(); // Get arguments
+
+        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]); // convert to effective address
+        final int register = args[0];
+        int c = this.gpr[register].read();
+        c--; // Subtract 1 from c
+
+        // load c back into the register
+        this.gpr[register].load((short)c);
+
+        if(c >0) {
             this.pc.load(effectiveAdr);
             return false;
         }
