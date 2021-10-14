@@ -539,6 +539,10 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing JGE instruction...\n");
                 increment_pc = processJGE(decodedInstruction);
             }
+            case "SOB" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SOB instruction...\n");
+                increment_pc = processSOB(decodedInstruction);
+            }
         }
 
         if (increment_pc)
