@@ -423,6 +423,12 @@ public class ControlUnit {
         return true;
     }
 
+    /**
+     * Processes the Subtract and branch
+     * @param instruction The decoded instruction
+     * @return Returns if the program counter should be incrimented
+     * @throws IOException Throws IOException
+     */
     private boolean processSOB(final Instruction instruction) throws IOException {
         final int[] args;
         args = instruction.getArguments(); // Get arguments
@@ -441,6 +447,42 @@ public class ControlUnit {
         }
 
         return true;
+    }
+
+    /**
+     * Process the Jump to subrutine
+     * @param instruction The decoded instruction
+     * @return returns if the pc should
+     * @throws IOException throws IOException
+     */
+    private boolean processJSR(Instruction instruction) throws IOException {
+        // Set gpr 3 to the next instruction
+        gpr[3].load((short)(pc.read()+1));
+
+        final int[] args;
+        args = instruction.getArguments(); // Get arguments
+
+        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]); // convert to effective address
+
+        pc.load(effectiveAdr);
+
+        return false;
+    }
+
+    /**
+     * Returns the program from the sub routine
+     * @param instruction the Decoded instruction
+     * @return Returns if the program counter should be updated
+     * @throws IOException Throws IOException.
+     */
+    private boolean processRFS(Instruction instruction) throws IOException{
+        final int[] args;
+        args = instruction.getArguments(); // Get arguments
+
+        pc.load((short)gpr[3].read());
+        gpr[0].load((short)args[3]);
+
+        return false;
     }
 
     /**
@@ -542,6 +584,14 @@ public class ControlUnit {
             case "SOB" -> {
                 System.out.println("[ControlUnit::singleStep] Processing SOB instruction...\n");
                 increment_pc = processSOB(decodedInstruction);
+            }
+            case "JSR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing JSR instruction...\n");
+                increment_pc = processJSR(decodedInstruction);
+            }
+            case "RFS" -> {
+                System.out.println("[ControlUnit::singleStep] Processing RFS instruction...\n");
+                increment_pc = processRFS(decodedInstruction);
             }
         }
 

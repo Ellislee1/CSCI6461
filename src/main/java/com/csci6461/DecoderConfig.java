@@ -41,6 +41,8 @@ public class DecoderConfig {
         instructions.put(012, new MemOp("JCC"));
         instructions.put(013, new MemOp("JMA"));
         instructions.put(016, new MemOp("SOB"));
+        instructions.put(014, new MemOp("JSR"));
+        instructions.put(015, new MemOp("RFS"));
         instructions.put(017, new MemOp("JGE"));
     }
 
