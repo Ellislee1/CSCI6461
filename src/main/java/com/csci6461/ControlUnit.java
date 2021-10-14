@@ -335,6 +335,32 @@ public class ControlUnit {
 
         return alu.operate(instruction.getName(),args[0], (short)args[3]);
     }
+
+    /**
+     * Handles the tests to see if a register is zero
+     * @param instruction The decoded instruction
+     * @param ifZero if we are checking if a val is zero
+     * @return Returns if the program counter should be incremented  by 1
+     * @throws IOException Throws IO exception
+     */
+    private boolean processZero(Instruction instruction, boolean ifZero) throws IOException {
+        int[] args;
+        args = instruction.getArguments();
+
+        short effectiveAdr = calculateEA(args[3],args[1],args[2]);
+        int register = args[0];
+        int c = gpr[register].read();
+
+        if(c == 0 && ifZero) {
+            pc.load(effectiveAdr);
+            return false;
+        } else if (c != 0 && !ifZero) {
+            pc.load(effectiveAdr);
+            return false;
+        }
+        return true;
+
+    }
     
 //    /**
 //     * Method to trigger program execution
@@ -404,6 +430,8 @@ public class ControlUnit {
             return(true);
         }
 
+        boolean increment_pc = true;
+
         switch (name) {
             case "LDR" -> {
                 System.out.println("[ControlUnit::singleStep] Processing LDR instruction...\n");
@@ -433,12 +461,23 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing SMR instruction...\n");
                 processMathMR(decodedInstruction);
             }
+            case "JZ" -> {
+                System.out.println("[ControlUnit::singleStep] Processing JZ instruction...\n");
+                increment_pc = processZero(decodedInstruction, true);
+            }
+            case "JNE" -> {
+                System.out.println("[ControlUnit::singleStep] Processing JNE instruction...\n");
+                increment_pc = processZero(decodedInstruction, false);
+            }
         }
 
-        short count = (short)pc.read();
-        count++;
-        boolean[] _new_count = get_bool_array(getBinaryString(count));
-        pc.set_bits(_new_count);
+        if (increment_pc)
+        {
+            short count = (short) pc.read();
+            count++;
+            boolean[] _new_count = get_bool_array(getBinaryString(count));
+            pc.set_bits(_new_count);
+        }
 
         return(true);
     }
