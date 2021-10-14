@@ -20,10 +20,10 @@ import java.util.Arrays;
  */
 public class TestController {
 
-    public static boolean[] get_bool_array(final String binaryString) {
+    public static boolean[] get_bool_array(String binaryString) {
 
-        final char[] binary = binaryString.toCharArray(); // Convert to character array
-        final boolean[] data = new boolean[binary.length]; // Create a new boolean array
+        char[] binary = binaryString.toCharArray(); // Convert to character array
+        boolean[] data = new boolean[binary.length]; // Create a new boolean array
 
         // Loop through array and flip bits where a 1 is present
         for (int x = 0; x < binary.length; x++) {
@@ -35,19 +35,19 @@ public class TestController {
         return data;
     }
 
-    public static void main(final String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) throws InterruptedException, IOException {
         System.out.println("Starting test controller");
 
         /* Create new control unit */
-        final ControlUnit cu = new ControlUnit();
+        ControlUnit cu = new ControlUnit();
 
         /* Test case 1: Execute TRAP */
         System.out.println("\n\nTest Case 1: Execute TRAP.\n");
-        final ByteBuffer buffer = ByteBuffer.allocate(2);
+        ByteBuffer buffer = ByteBuffer.allocate(2);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.put((byte) 0x07);
         buffer.put((byte) 0x78);  /* TRAP */
-        final ByteBuffer aBuffer = ByteBuffer.allocate(2);
+        ByteBuffer aBuffer = ByteBuffer.allocate(2);
         aBuffer.order(ByteOrder.LITTLE_ENDIAN);
         aBuffer.put((byte) 0x10);
         aBuffer.put((byte) 0x04);
@@ -61,13 +61,13 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        boolean[] address = TestController.get_bool_array(Integer.toBinaryString(testAddress));
+        boolean[] address = get_bool_array(Integer.toBinaryString(testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);
         try {
             cu.pc.load(address);
-        } catch (final IOException ioe) {
+        } catch (IOException ioe) {
             System.out.println("Exception while loading test address into pc...");
             ioe.printStackTrace();
         }
@@ -80,7 +80,7 @@ public class TestController {
         /* Call singleStep on CU to execute test instruction */
         try {
             cu.singleStep();
-        } catch (final IOException ioe) {
+        } catch (IOException ioe) {
             System.out.println("Exception during single step execution...");
             ioe.printStackTrace();
         }
@@ -108,13 +108,13 @@ public class TestController {
         System.out.printf("Instruction address set to: %d\n",
                 testAddress);
 
-        address = TestController.get_bool_array(Integer.toBinaryString(testAddress));
+        address = get_bool_array(Integer.toBinaryString(testAddress));
 
 //        cu.load(1040, testInstruction);
         cu.writeDataToMemory(1040, testInstruction);
         try {
             cu.pc.load(address);
-        } catch (final IOException ioe) {
+        } catch (IOException ioe) {
             System.out.println("Exception while loading test address into pc...");
             ioe.printStackTrace();
         }
@@ -122,7 +122,7 @@ public class TestController {
         /* Call singleStep on CU to execute test instruction */
         try {
             cu.singleStep();
-        } catch (final IOException ioe) {
+        } catch (IOException ioe) {
             System.out.println("Exception during single step execution...");
             ioe.printStackTrace();
         }

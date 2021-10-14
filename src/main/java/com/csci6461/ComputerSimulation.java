@@ -19,9 +19,9 @@ public class ComputerSimulation extends Application {
      * @throws IOException IO exception for any crash
      */
     @Override
-    public void start(final Stage stage) throws IOException {
-        final FXMLLoader fxmlLoader = new FXMLLoader(ComputerSimulation.class.getResource("Simulator-view.fxml"));
-        final Scene scene = new Scene(fxmlLoader.load(), 1280, 720);
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(ComputerSimulation.class.getResource("Simulator-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 1280, 720);
         stage.setTitle("Computer Simulation (16-bit)");
         stage.setScene(scene);
         stage.show();
@@ -31,7 +31,7 @@ public class ComputerSimulation extends Application {
      * The main call to run the program.
      * @param args Any arguments passed to the program.
      */
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         Application.launch();
     }
 }

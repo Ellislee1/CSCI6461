@@ -25,12 +25,12 @@ class CBitSet {
      * Constructor using number of bits
      * @param no_bits Number of bits.
      */
-    public CBitSet(final int no_bits){
-        no_bytes = this.find_bytes(no_bits);
+    public CBitSet(int no_bits){
+        this.no_bytes = find_bytes(no_bits);
         this.no_bits = no_bits;
 
         // Bit sets are held in number of bytes
-        this.bit_set = new boolean[no_bytes*4];
+        bit_set = new boolean[this.no_bytes *4];
     }
 
 //    /**
@@ -53,17 +53,17 @@ class CBitSet {
      */
     public void set_bits(boolean[] new_bit_set) throws IndexOutOfBoundsException{
 
-        if (new_bit_set.length> this.no_bytes *4){
+        if (new_bit_set.length> no_bytes *4){
 
-            new_bit_set = this.cast_down(new_bit_set);
+            new_bit_set = cast_down(new_bit_set);
         }
 
-        this.set_zero();
+        set_zero();
 
-        final int offset = (this.no_bytes *4) - new_bit_set.length;
+        int offset = (no_bytes *4) - new_bit_set.length;
 
         for(int i= new_bit_set.length-1; i>=0;i--){
-            bit_set[i+offset] = new_bit_set[i];
+            this.bit_set[i+offset] = new_bit_set[i];
         }
 
     }
@@ -72,7 +72,7 @@ class CBitSet {
      * Reset the set to an array of zeros.
      */
     public void set_zero(){
-        bit_set = new boolean[no_bytes*4];
+        this.bit_set = new boolean[this.no_bytes *4];
     }
 
     /**
@@ -80,7 +80,7 @@ class CBitSet {
      * @param no_bits Number of bits
      * @return Returns the number of bytes
      */
-    private int find_bytes(final int no_bits){
+    private int find_bytes(int no_bits){
         return (int)Math.ceil(no_bits/4);
     }
 
@@ -89,16 +89,16 @@ class CBitSet {
      * @param position Position of bit to set
      * @param value Value to set that bit
      */
-    public void set(final int position, final boolean value) {
-        bit_set[position] = value;
+    public void set(int position, boolean value) {
+        this.bit_set[position] = value;
     }
 
     /**
      * Set a bit to true based on position
      * @param position position to set.
      */
-    public void set(final int position) throws ArrayIndexOutOfBoundsException{
-        bit_set[position] = true;
+    public void set(int position) throws ArrayIndexOutOfBoundsException{
+        this.bit_set[position] = true;
     }
 
     /**
@@ -108,7 +108,7 @@ class CBitSet {
     protected int cardinality() {
         int count = 0;
 
-        for(final boolean val: bit_set){
+        for(boolean val: this.bit_set){
             if(val){
                 count ++;
             }
@@ -121,7 +121,7 @@ class CBitSet {
      * @return Returns the size in bits
      */
     public int get_size(){
-        return no_bits;
+        return this.no_bits;
     }
 
     /**
@@ -130,7 +130,7 @@ class CBitSet {
      */
     @Override
     public String toString(){
-        return Arrays.toString(this.get_set_bits());
+        return Arrays.toString(get_set_bits());
     }
 
     /**
@@ -138,9 +138,9 @@ class CBitSet {
      * @return the value as an integer
      */
     public int read() {
-        final StringBuilder s = new StringBuilder();
+        StringBuilder s = new StringBuilder();
 
-        for(final boolean val: bit_set){
+        for(boolean val: this.bit_set){
             if(val){
                 s.append("1");
             } else {
@@ -156,11 +156,11 @@ class CBitSet {
      * @return Returns array of set bit positions
      */
     protected int[] get_set_bits(){
-        final int[] set = new int[this.cardinality()];
+        int[] set = new int[cardinality()];
 
         int position = set.length-1;
-        for(int i = (no_bytes*4)-1; i>=0; i--){
-            if (bit_set[i]){
+        for(int i = (this.no_bytes *4)-1; i>=0; i--){
+            if (this.bit_set[i]){
                 set[position] = i;
                 position --;
             }
@@ -173,10 +173,10 @@ class CBitSet {
      * @param org the higher dimension array
      * @return The matching dimension array
      */
-    private boolean[] cast_down(final boolean[] org){
-        final boolean[] valid = new boolean[this.no_bytes *4];
+    private boolean[] cast_down(boolean[] org){
+        boolean[] valid = new boolean[no_bytes *4];
 
-        final int offset = org.length-valid.length;
+        int offset = org.length-valid.length;
 
         for(int i=org.length-1;i>= offset;i--){
             valid[i-offset]=org[i];

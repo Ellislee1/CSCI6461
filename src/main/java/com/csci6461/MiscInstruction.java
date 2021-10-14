@@ -14,20 +14,20 @@ public class MiscInstruction extends Instruction {
      *
      * @param name String containing instruction's name (E.g. HTL or TRAP)
      */
-    MiscInstruction(final String name){
+    MiscInstruction(String name){
         super(name);
     }
     @Override
     int[] getArguments() {
         /* Only possible argument is trap code; so extract bits 12 through 15 and return as int */
-        final String bits = String.format("%16s", Integer.toBinaryString(getInstruction())).replace(' ', '0');
+        String bits = String.format("%16s", Integer.toBinaryString(this.getInstruction())).replace(' ', '0');
         System.out.printf("[MiscInstruction::getArguments] Trap code for instruction %s is %s\n",
                 bits, bits.substring(11,15));
-        final int trapCode = Integer.parseInt(bits.substring(11,15),2);
+        int trapCode = Integer.parseInt(bits.substring(11,15),2);
         System.out.printf("[MiscInstruction::getArguments] Converted trap code to binary: %d\n", trapCode);
 
         /* Save trap code to args array */
-        final int[] args = new int[1];
+        int[] args = new int[1];
         args[0] = trapCode;
 
         /* Return args */

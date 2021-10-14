@@ -21,9 +21,9 @@ public class Clock {
      * 
      * @param time An int with timeout period in ms
      */
-    public Clock(final long time) {
+    public Clock(long time) {
         /* Set the timeout period */
-        this.timeoutPeriod = time;
+        timeoutPeriod = time;
     }
     
     /**
@@ -34,6 +34,6 @@ public class Clock {
      *                              thread
      */
     public void waitForNextTick() throws InterruptedException {
-        Thread.sleep(this.timeoutPeriod);
+        Thread.sleep(timeoutPeriod);
     }
 }

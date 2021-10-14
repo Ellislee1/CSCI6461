@@ -79,11 +79,6 @@ public class ControlUnit {
     private final int active_cc;
 
     /**
-     * Parameter to hold system clock
-     */
-    private final Clock systemClock;
-
-    /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
@@ -152,7 +147,10 @@ public class ControlUnit {
         /*
          * Create system clock and initialize to configured timeout
          */
-        this.systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
+        /**
+         * Parameter to hold system clock
+         */
+        Clock systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
 
         this.controlCode = CC.OKAY;
 
@@ -403,6 +401,29 @@ public class ControlUnit {
     }
 
     /**
+     * Jump if the register is >= 0;
+     * @param instruction The decoded instruction
+     * @return Returns if the program counter should be incremented by 1
+     * @throws IOException Throws IO exception
+     */
+    private boolean processJGE(final Instruction instruction) throws IOException {
+        final int[] args;
+        args = instruction.getArguments(); // Get arguments
+
+        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]); // convert to effective address
+        final int register = args[0];
+        final int c = this.gpr[register].read();
+
+        // Run the test to see if the value is equal to zero or not
+        if(c >= 0) {
+            this.pc.load(effectiveAdr);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Method to execute single step by getting the next instruction in
      * memory, decoding it and executing it
      *
@@ -480,19 +501,23 @@ public class ControlUnit {
             }
             case "JZ" -> {
                 System.out.println("[ControlUnit::singleStep] Processing JZ instruction...\n");
-                increment_pc = this.processZero(decodedInstruction, true);
+                increment_pc = processZero(decodedInstruction, true);
             }
             case "JNE" -> {
                 System.out.println("[ControlUnit::singleStep] Processing JNE instruction...\n");
-                increment_pc = this.processZero(decodedInstruction, false);
+                increment_pc = processZero(decodedInstruction, false);
             }
             case "JCC" -> {
                 System.out.println("[ControlUnit::singleStep] Processing JCC instruction...\n");
-                increment_pc = this.processjumpCC(decodedInstruction);
+                increment_pc = processjumpCC(decodedInstruction);
             }
             case "JMA" -> {
                 System.out.println("[ControlUnit::singleStep] Processing JMA instruction...\n");
-                increment_pc = this.processJMA(decodedInstruction);
+                increment_pc = processJMA(decodedInstruction);
+            }
+            case "JGE" -> {
+                System.out.println("[ControlUnit::singleStep] Processing JGE instruction...\n");
+                increment_pc = processJGE(decodedInstruction);
             }
         }
 

@@ -8,7 +8,7 @@ public class Launcher {
      * The main program
      * @param args Arguments for the program
      */
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         ComputerSimulation.main(args);
     }
 }

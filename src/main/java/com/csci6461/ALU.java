@@ -22,7 +22,7 @@ public class ALU {
      * @param gpr An array of Register objects with the GPRs for the simulation
      * @param mbr Register object with the MBR for the simulation
      */
-    ALU(final Register[] gpr, final Register mbr) {
+    ALU(Register[] gpr, Register mbr) {
         /* Allocate storage for GPRs */
         this.gpr = new Register[gpr.length];
 
@@ -41,13 +41,13 @@ public class ALU {
      *
      * @return returns condition code (0-3
      */
-    public int operate(final String code, final int r, final short imm) {
+    public int operate(String code, int r, short imm) {
 
         return switch (code) {
-            case "AMR" -> this.MemToReg(r, false);
-            case "SMR" -> this.MemToReg(r, true);
-            case "AIR" -> this.ImmToReg(r, false, imm);
-            case "SIR" -> this.ImmToReg(r, true, imm);
+            case "AMR" -> MemToReg(r, false);
+            case "SMR" -> MemToReg(r, true);
+            case "AIR" -> ImmToReg(r, false, imm);
+            case "SIR" -> ImmToReg(r, true, imm);
             default -> -1;
         };
     }
@@ -58,23 +58,23 @@ public class ALU {
      * @param subtraction Is this operation a subtraction (adding a negative number)
      * @return Returns an int with condition code
      */
-    protected int MemToReg(final int r, final boolean subtraction){
+    protected int MemToReg(int r, boolean subtraction){
         int cc = -1;
-        final short operand1 = (short) this.mbr.read();
-        final short operand2 = (short) this.gpr[r].read();
+        short operand1 = (short) mbr.read();
+        short operand2 = (short) gpr[r].read();
 
         if (subtraction) {
             try {
-                this.gpr[r].load((short)(operand2-operand1));
-            } catch (final IOException e) {
+                gpr[r].load((short)(operand2-operand1));
+            } catch (IOException e) {
                 /* TO DO: Convert to global ENUM */
                 /*        Also, verify when it is appropriate to return UNDERFLOW instead */
                 cc = 0;
             }
         } else {
             try {
-                this.gpr[r].load((short)(operand2+operand1));
-            } catch (final IOException e) {
+                gpr[r].load((short)(operand2+operand1));
+            } catch (IOException e) {
                 /* TO DO: Convert to global ENUM */
                 /*        Also, verify when it is appropriate to return UNDERFLOW instead */
                 cc = 0;
@@ -91,20 +91,20 @@ public class ALU {
      * @param subtraction is the operation is a subtraction
      * @return Returns the CC code.
      */
-    protected int ImmToReg(final int r, final boolean subtraction, final short imm){
+    protected int ImmToReg(int r, boolean subtraction, short imm){
         int cc = -1;
         final short x = 31;
 
-        final short operand2 = (short) this.gpr[r].read();
+        short operand2 = (short) gpr[r].read();
 
         if(operand2 == 0){
             try {
                 if (subtraction) {
-                    this.gpr[r].load((short) -imm);
+                    gpr[r].load((short) -imm);
                 } else {
-                    this.gpr[r].load(imm);
+                    gpr[r].load(imm);
                 }
-            } catch (final IOException e){
+            } catch (IOException e){
                 /* TO DO: Convert to global ENUM */
                 /*        Also, verify when it is appropriate to return UNDERFLOW instead */
                 cc = 0;
@@ -112,11 +112,11 @@ public class ALU {
         } else {
             try {
                 if (subtraction) {
-                    this.gpr[r].load((short)(operand2-imm));
+                    gpr[r].load((short)(operand2-imm));
                 } else {
-                    this.gpr[r].load((short)(operand2+imm));
+                    gpr[r].load((short)(operand2+imm));
                 }
-            }catch (final IOException e){
+            }catch (IOException e){
                 /* TO DO: Convert to global ENUM */
                 /*        Also, verify when it is appropriate to return UNDERFLOW instead */
                 cc = 0;

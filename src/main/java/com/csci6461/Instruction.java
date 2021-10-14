@@ -25,7 +25,7 @@ public abstract class Instruction {
      *
      * @param name String containing the instruction name (I.e. HLT, LDR, ADD, etc.)
      */
-    Instruction(final String name){
+    Instruction(String name){
         this.name = name;
     }
 
@@ -35,7 +35,7 @@ public abstract class Instruction {
      * @return String containing the instruction's name
      */
     public String getName(){
-        return name;
+        return this.name;
     }
 
     /**
@@ -43,7 +43,7 @@ public abstract class Instruction {
      *
      * @param instruction 16-bit integer with un-decoded instruction
      */
-    public void setInstruction(final short instruction) {
+    public void setInstruction(short instruction) {
         this.instruction = instruction;
     }
 
@@ -53,7 +53,7 @@ public abstract class Instruction {
      * @return 16-bit int with un-decoded instruction
      */
     public short getInstruction() {
-        return this.instruction;
+        return instruction;
     }
 
     /**
