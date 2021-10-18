@@ -41,21 +41,17 @@ public class Cache extends Memory{
     /**
      * Parameter to hold list of tags so we can implement replacement logic
      */
-    private short[] tagList;
+    private Short[] tagList;
+
     /**
-     * The cache class constructor creates a new two-dimensional data storage array
-     * of the configured size for the cache storage and calls the superclass constructor.
-     * to initialize the memory
+     * This method is called by the various constructors to initialize the cache
      *
-     * @param s   Size of memory array in number of 16-bit words
      * @param mar Register object to use as Memory Address Register (MAR)
      * @param mbr Register object to use as Memory Buffer Register (MBR)
+     *
      * @throws IOException If an invalid memory size is specified
      */
-    public Cache(int s, Register mar, Register mbr) throws IOException {
-        /* Call superclass constructor to initialize memory */
-        super(s, mar, mbr);
-
+    private void initializeCache(int s, Register mar, Register mbr) throws IOException {
         /* Check to make sure Memory size if divisible by cache size */
         if (s % CACHE_SIZE != 0) {
             String error = String.format(
@@ -79,7 +75,67 @@ public class Cache extends Memory{
         System.out.printf("[Cache::Cache] Offset mask is: %s\n", Integer.toBinaryString((int)offsetMask));
 
         /* Allocate storage for tag list */
-        tagList = new short[CACHE_SIZE];
+        tagList = new Short[CACHE_SIZE];
+    }
+
+    /**
+     * The cache class constructor creates a new two-dimensional data storage array
+     * of the configured size for the cache storage and calls the superclass constructor.
+     * to initialize the memory
+     *
+     * @param s   Size of memory array in number of 16-bit words
+     * @param mar Register object to use as Memory Address Register (MAR)
+     * @param mbr Register object to use as Memory Buffer Register (MBR)
+     *
+     * @throws IOException If an invalid memory size is specified
+     */
+    public Cache(int s, Register mar, Register mbr) throws IOException {
+        /* Call superclass constructor to initialize memory */
+        super(s, mar, mbr);
+
+        /* Call method to initialize the cache */
+        initializeCache(s, mar, mbr);
+    }
+
+    /**
+     * Test construction that takes a two-dimensional array of shorts that the
+     * cache will be initialized to. This is to enable quick testing of replacement
+     * and write logic without having to wait for the cache to fill up.
+     *
+     * @param s   Size of memory array in number of 16-bit words
+     * @param mar Register object to use as Memory Address Register (MAR)
+     * @param mbr Register object to use as Memory Buffer Register (MBR)
+     * @param data Two-dimensional array of shorts to initialize the cache with
+     *             NOTE: Each row i data must have the correct number of words for
+     *                   a cache block, but data can have fewer rows in case we
+     *                   want to leave some cache lines empty
+     * @param tags An array of shorts with the tag for each row in data
+     *             NOTE: If null or shorter than the number of row in the data,
+     *                   the default tag is the row number
+     *
+     * @throws IOException If an invalid memory size is specified
+     */
+    public Cache(int s, Register mar, Register mbr, short[][] data, Short tags[]) throws IOException {
+        /* Call superclass constructor to initialize memory */
+        super(s, mar, mbr);
+
+        System.out.println("[Cache::Cache] Initializing cache with seed data...");
+
+        /* Call method to initialize the cache */
+        initializeCache(s, mar, mbr);
+
+        System.out.printf("[Cache::Cache] Seeding cache with %d lines of test data.", data.length);
+        /* Initialize storage array in cache */
+        for(int i = 0 ; i < CACHE_SIZE && i < data.length; i++){
+            Short tag;
+            if (tags == null || i >= tags.length) {
+                tag = (short) i;
+            } else {
+                tag = tags[i];
+            }
+            cache.put((Short) tag, data[i]);
+            tagList[i] = (short) tag;
+        }
     }
 
     /**
@@ -127,7 +183,7 @@ public class Cache extends Memory{
                 Integer.toBinaryString((int) startAddress));
 
         /* Add max block id - 1 to starting address to get ending address */
-        short endAddress = (short) (startAddress + (Math.pow(2, byteOffset) - 1));
+        short endAddress = (short) (startAddress + (Math.pow(2, byteOffset)));
         System.out.printf("[Cache::getMemoryBlock] Memory Block ending address is: %s\n",
                 Integer.toBinaryString((int) endAddress));
 
@@ -173,7 +229,7 @@ public class Cache extends Memory{
      * This method overrides the main memory's read() method to look in cache before trying to
      * read from main memory
      *
-     * @throws IOException Whenever an IOExpection is throw by the superclass read()
+     * @throws IOException Whenever an IOExpection is thrown by the superclass read()
      */
     @Override
     public void read() throws IOException {
@@ -207,5 +263,71 @@ public class Cache extends Memory{
             /* Save the block to the cache for future reads */
             saveToCache(tag);
         }
+    }
+
+    /**
+     * This method overrides the main memory's write() method to look in cache before trying to
+     * write into main memory
+     *
+     * @throws IOException Whenever an IOExpection is thrown by the superclass write()
+     */
+    @Override
+    public void write() throws IOException {
+        /* Get address from MAR */
+        short address = (short) mar.read();
+
+        /* Get tag so we can search if line is cached */
+        short tag = getTag(address);
+
+        /* Check for a line with the appropriate tag in cache */
+        short[] line = cache.get(tag);
+        if (line != null) {
+            System.out.printf("[Cache::write] Cache hit for address %d!\n", address);
+
+            /* If data is found in cache, get byte offset */
+            short offset = getByteOffset(address);
+
+            /* read the word from MBR and write into the cache */
+            line[offset]=(short) mbr.read();
+            System.out.printf("[Cache::write] successfully write into cache: %d\n", line[offset]);
+        } else {
+            System.out.printf("[Cache::write] Cache miss for address %s.\n", address);
+
+            /* Do nothing (not write into cache) */
+        }
+
+        /* Write into memory no matter if it is in cache */
+        super.write();
+    }
+
+    /**
+     * This method prints out a line of the cache for test and debugging
+     *
+     * @param n int with line number to display
+     */
+    public void printCacheLine(Short n) {
+
+        // |--------|------|-------------|
+        // |   TAG  | WORD |    VALUE    |
+        // |--------|------|-------------|
+        System.out.printf("\n\n       CACHE LINE %d DUMP         \n", n+1);
+        System.out.println("|---------|--------|-------------|");
+        System.out.println("|   TAG   |  WORD  |    VALUE    |");
+        System.out.println("|---------|--------|-------------|");
+
+        /* Get the tag for the line */
+        Short tag = tagList[n];
+
+        /* Get the line from the cache */
+        short[] line = cache.get(tag);
+
+        /* Iterate through line and print values */
+        for (int i = 0; line != null & i < CACHE_SIZE; i++) {
+            System.out.printf("  %s     %s     %s\n",
+                    String.format("0x%05X", (int) tag),
+                    String.format("0x%01X", (int) i),
+                    String.format("0x%06X", line[i]));
+        }
+        System.out.println("|---------|--------|-------------|");
     }
 }

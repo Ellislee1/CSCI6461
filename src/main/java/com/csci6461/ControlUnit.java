@@ -518,6 +518,13 @@ public class ControlUnit {
     }
 
     /**
+     * Prints a line in the cache
+     *
+     * @param n Integer number of line to print
+     */
+    public void printCacheLine(Short n) { mainMemory.printCacheLine(n); }
+
+    /**
      * Get the 16-bit binary string
      * @param word 16-bit word to convert to binary
      * @return Returns the binary string with all 16-bits
