@@ -61,13 +61,18 @@ public class ControlUnit {
      */
     public Register ir;
 
+//    /**
+//     * Parameter to hold the computer's main memory
+//     * NOTE: Setting to private for now since I don't think memory needs to
+//     *       be read directly outside the CPU but is always loaded to register
+//     *       first. We may have to change this as we build out the sim.
+//     */
+//    private Memory mainMemory;
+
     /**
-     * Parameter to hold the computer's main memory
-     * NOTE: Setting to private for now since I don't think memory needs to 
-     *       be read directly outside the CPU but is always loaded to register 
-     *       first. We may have to change this as we build out the sim.
+     * Parameter to hold Cache for the computer, which also acts as the interface to Main Memory
      */
-    private Memory mainMemory;
+    private Cache mainMemory;
 
     /**
      * Parameter to hold the computer's instruction decoder
@@ -141,7 +146,7 @@ public class ControlUnit {
          * Create main memory of appropriate size
          */
         try {
-            mainMemory = new Memory(MEMORY_SIZE,mar,mbr);
+            mainMemory = new Cache(MEMORY_SIZE,mar,mbr);
         } catch(IOException ioe) {
             System.out.println("Execption while creating computer memory...");
             ioe.printStackTrace();
@@ -521,6 +526,13 @@ public class ControlUnit {
     public void printMem(){
         mainMemory.printMemory();
     }
+
+    /**
+     * Prints a line in the cache
+     *
+     * @param n Integer number of line to print
+     */
+    public void printCacheLine(Short n) { mainMemory.printCacheLine(n); }
 
     /**
      * Get the 16-bit binary string
