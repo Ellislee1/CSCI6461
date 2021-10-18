@@ -27,6 +27,11 @@ public class ControlUnit {
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
 
     /**
+     * Parameter to hold condition code
+     */
+    CC cc;
+
+    /**
      * Parameter to hold the Program Counter (PC) register
      */
     public Register pc;
@@ -92,6 +97,11 @@ public class ControlUnit {
      */
     public ControlUnit() {
         System.out.println("Initializing control unit...");
+
+        /*
+         * Initialize condition code to OKAY
+         */
+        cc = CC.OKAY;
         
         /*
          * Create Program Counter (PC) register
@@ -327,7 +337,7 @@ public class ControlUnit {
      *
      * @return An int with the condition code (0-3)
      */
-    private int processMathMR(Instruction instruction) throws IOException {
+    private void processMathMR(Instruction instruction) throws IOException {
         int[] args;
 
         /* Get instruction arguments */
@@ -338,7 +348,7 @@ public class ControlUnit {
 
         /* Call operate on ALU with Opcode and return condition code */
 
-        return alu.operate(instruction.getName(),args[0], (short)args[3]);
+        cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
     }
     
 //    /**
