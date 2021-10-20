@@ -17,15 +17,13 @@ import java.util.HashMap;
  */
 public class Cache extends Memory{
     /**
-     * Define constants for total cache size in memory blocks
-     * NOTE: The size of the cache must be divisible by the size of the memory.
-     *       Also, the size of the blocks is assumed to be equal to the cache size
-     *       since this seems to work out for values divisible by memory size.
-     *              For example: 2048 / 16 = 128 -> 128 * 16 = 2048
-     *       The number of bits in the byte offset field is then:
-     *                              log^2(16) = 4
+     * Parameter to hold cache size
      */
-    private static final int CACHE_SIZE = 16;
+    private int cacheSize;
+    /**
+     * Parameter to hold number of words per memory block
+     */
+    private int blockSize;
     /**
      * Parameter to hold a hash map to be used as storage for the cache
      */
@@ -46,26 +44,33 @@ public class Cache extends Memory{
     /**
      * This method is called by the various constructors to initialize the cache
      *
+     * @param s   Int with size of memory array in number of 16-bit words
+     * @param c   Int with size of cache in 16-bit words
+     * @param b   Int with number words in a memory block
      * @param mar Register object to use as Memory Address Register (MAR)
      * @param mbr Register object to use as Memory Buffer Register (MBR)
      *
      * @throws IOException If an invalid memory size is specified
      */
-    private void initializeCache(int s, Register mar, Register mbr) throws IOException {
+    private void initializeCache(int s, int c, int b, Register mar, Register mbr) throws IOException {
+        /* Initialize cache size and memory block size */
+        this.cacheSize = c;
+        this.blockSize = b;
+
         /* Check to make sure Memory size if divisible by cache size */
-        if (s % CACHE_SIZE != 0) {
+        if (s % this.cacheSize != 0) {
             String error = String.format(
                     "Invalid memory size: %d; Memory must be divisible by cache size of %d.",
-                    s, CACHE_SIZE);
+                    s, c);
             throw new IOException(error);
         }
 
         /* Create cache storage array according to configured size */
-        cache = new HashMap<Short, short[]>(CACHE_SIZE);
-        System.out.printf("[Cache::Cache] Created Cache storage is size: %d\n", CACHE_SIZE);
+        cache = new HashMap<Short, short[]>(this.cacheSize);
+        System.out.printf("[Cache::Cache] Created Cache storage is size: %d\n", c);
 
-        /* Calculate byteOffset field size from block size (which is equal to cache size) */
-        byteOffset = (int) (Math.log(CACHE_SIZE) / Math.log(2));
+        /* Calculate byteOffset field size from block size */
+        byteOffset = (int) (Math.log(this.blockSize) / Math.log(2));
         System.out.printf("[Cache::Cache] Size of byte offset field is: %d\n", byteOffset);
 
         /* Get mask to extract byte offset field by successive shift */
@@ -75,7 +80,7 @@ public class Cache extends Memory{
         System.out.printf("[Cache::Cache] Offset mask is: %s\n", Integer.toBinaryString((int)offsetMask));
 
         /* Allocate storage for tag list */
-        tagList = new Short[CACHE_SIZE];
+        tagList = new Short[this.cacheSize];
     }
 
     /**
@@ -83,18 +88,20 @@ public class Cache extends Memory{
      * of the configured size for the cache storage and calls the superclass constructor.
      * to initialize the memory
      *
-     * @param s   Size of memory array in number of 16-bit words
+     * @param s   Int with size of memory array in number of 16-bit words
+     * @param c   Int with size of cache in 16-bit words
+     * @param b   Int with number words in a memory block
      * @param mar Register object to use as Memory Address Register (MAR)
      * @param mbr Register object to use as Memory Buffer Register (MBR)
      *
      * @throws IOException If an invalid memory size is specified
      */
-    public Cache(int s, Register mar, Register mbr) throws IOException {
+    public Cache(int s, int c, int b, Register mar, Register mbr) throws IOException {
         /* Call superclass constructor to initialize memory */
         super(s, mar, mbr);
 
         /* Call method to initialize the cache */
-        initializeCache(s, mar, mbr);
+        initializeCache(s, c, b, mar, mbr);
     }
 
     /**
@@ -102,7 +109,9 @@ public class Cache extends Memory{
      * cache will be initialized to. This is to enable quick testing of replacement
      * and write logic without having to wait for the cache to fill up.
      *
-     * @param s   Size of memory array in number of 16-bit words
+     * @param s   Int with size of memory array in number of 16-bit words
+     * @param c   Int with size of cache in 16-bit words
+     * @param b   Int with number words in a memory block
      * @param mar Register object to use as Memory Address Register (MAR)
      * @param mbr Register object to use as Memory Buffer Register (MBR)
      * @param data Two-dimensional array of shorts to initialize the cache with
@@ -115,18 +124,18 @@ public class Cache extends Memory{
      *
      * @throws IOException If an invalid memory size is specified
      */
-    public Cache(int s, Register mar, Register mbr, short[][] data, Short tags[]) throws IOException {
+    public Cache(int s, int c, int b, Register mar, Register mbr, short[][] data, Short tags[]) throws IOException {
         /* Call superclass constructor to initialize memory */
         super(s, mar, mbr);
 
         System.out.println("[Cache::Cache] Initializing cache with seed data...");
 
         /* Call method to initialize the cache */
-        initializeCache(s, mar, mbr);
+        initializeCache(s, c, b, mar, mbr);
 
         System.out.printf("[Cache::Cache] Seeding cache with %d lines of test data.", data.length);
         /* Initialize storage array in cache */
-        for(int i = 0 ; i < CACHE_SIZE && i < data.length; i++){
+        for(int i = 0 ; i < this.cacheSize && i < data.length; i++){
             Short tag;
             if (tags == null || i >= tags.length) {
                 tag = (short) i;
@@ -150,7 +159,7 @@ public class Cache extends Memory{
         /* Shift address by length of byte offset field to get tag */
         short tag = (short) (address >>> byteOffset);
         System.out.printf("[Cache::getTag] Tag after shift by %s: %s\n"
-                , CACHE_SIZE, Integer.toBinaryString((int)(0xffff & tag)));
+                , byteOffset, Integer.toBinaryString((int)(0xffff & tag)));
 
         return tag;
     }
@@ -200,13 +209,13 @@ public class Cache extends Memory{
 
         /* Check if cache is full and do replacement processing */
         int currentSize = cache.size();
-        if (currentSize == CACHE_SIZE) {
+        if (currentSize == this.cacheSize) {
             System.out.println("[Cache::saveToCache] Cache is full! Implementing replacement logic.");
 
             /* Get a random line number to replace */
-            index = (int) (Math.random() * (CACHE_SIZE - 1));
+            index = (int) (Math.random() * (this.cacheSize - 1));
             System.out.printf("[Cache::saveToCache] Random replacement of line #%d with tag %s.\n"
-                    , index, Integer.toBinaryString((int) tagList[index]));
+                    , index + 1, Integer.toBinaryString((int) tagList[index]));
 
             /* Get tag for that line from tag list and remove it from cache */
             cache.remove(tagList[index]);
@@ -322,12 +331,43 @@ public class Cache extends Memory{
         short[] line = cache.get(tag);
 
         /* Iterate through line and print values */
-        for (int i = 0; line != null & i < CACHE_SIZE; i++) {
+        for (int i = 0; line != null & i < this.cacheSize; i++) {
             System.out.printf("  %s     %s     %s\n",
                     String.format("0x%05X", (int) tag),
                     String.format("0x%01X", (int) i),
                     String.format("0x%06X", line[i]));
         }
         System.out.println("|---------|--------|-------------|");
+    }
+
+    /**
+     * This method gets a line in the cache and returns an array of shorts where the
+     * first element (I.e. index 0) is the tag and the rest of the elements are the values
+     * in the corresponding line of the cache.
+     *
+     * @param n     Short with line number to get
+     *
+     * @return  An array of shorts where the first element is the tag and the rest are
+     *          the values in the cache line
+     */
+    public short[] getCacheLine(Short n) {
+        short[] output = new short[this.blockSize + 1];
+
+        /* Get tag for corresponding line number */
+        Short tag = tagList[n];
+
+        /* Save tag to first element in the array */
+        output[0] = (short) tag;
+
+        /* Get line corresponding to tag */
+        short[] line = cache.get(tag);
+
+        /* Copy each word in line to output array */
+        for (int i = 1; i <= this.blockSize; i++) {
+            output[i] = line[i - 1];
+        }
+
+        /* Return output array */
+        return output;
     }
 }
