@@ -22,9 +22,16 @@ public class ControlUnit {
      * that is loaded at execution
      */
     private static final int MEMORY_SIZE = 2048;     /* Size of main memory */
+    private static final int CACHE_SIZE = 16;        /* Size of cache */
+    private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
     private static final long CLOCK_TIMEOUT = 1000;  /* Clock timeout period */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
+
+    /**
+     * Parameter to hold condition code
+     */
+    CC cc;
 
     /**
      * Parameter to hold the Program Counter (PC) register
@@ -56,13 +63,18 @@ public class ControlUnit {
      */
     public Register ir;
 
+//    /**
+//     * Parameter to hold the computer's main memory
+//     * NOTE: Setting to private for now since I don't think memory needs to
+//     *       be read directly outside the CPU but is always loaded to register
+//     *       first. We may have to change this as we build out the sim.
+//     */
+//    private Memory mainMemory;
+
     /**
-     * Parameter to hold the computer's main memory
-     * NOTE: Setting to private for now since I don't think memory needs to 
-     *       be read directly outside the CPU but is always loaded to register 
-     *       first. We may have to change this as we build out the sim.
+     * Parameter to hold Cache for the computer, which also acts as the interface to Main Memory
      */
-    private Memory mainMemory;
+    private Cache mainMemory;
 
     /**
      * Parameter to hold the computer's instruction decoder
@@ -84,6 +96,11 @@ public class ControlUnit {
      */
     public ControlUnit() {
         System.out.println("Initializing control unit...");
+
+        /*
+         * Initialize condition code to OKAY
+         */
+        cc = CC.OKAY;
         
         /*
          * Create Program Counter (PC) register
@@ -128,8 +145,8 @@ public class ControlUnit {
          * Create main memory of appropriate size
          */
         try {
-            this.mainMemory = new Memory(ControlUnit.MEMORY_SIZE, this.mar, this.mbr);
-        } catch(final IOException ioe) {
+            mainMemory = new Cache(MEMORY_SIZE,CACHE_SIZE,BLOCK_SIZE,mar,mbr);
+        } catch(IOException ioe) {
             System.out.println("Execption while creating computer memory...");
             ioe.printStackTrace();
         }
@@ -324,8 +341,8 @@ public class ControlUnit {
      *
      * @return An int with the condition code (0-3)
      */
-    private int processMathMR(final Instruction instruction) throws IOException {
-        final int[] args;
+    private void processMathMR(Instruction instruction) throws IOException {
+        int[] args;
 
         /* Get instruction arguments */
         args = instruction.getArguments();
@@ -335,6 +352,7 @@ public class ControlUnit {
 
         /* Call operate on ALU with Opcode and return condition code */
 
+        cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
         return this.alu.operate(instruction.getName(),args[0], (short)args[3]);
     }
 
@@ -674,6 +692,13 @@ public class ControlUnit {
     public void printMem(){
         this.mainMemory.printMemory();
     }
+
+    /**
+     * Prints a line in the cache
+     *
+     * @param n Integer number of line to print
+     */
+    public void printCacheLine(Short n) { mainMemory.printCacheLine(n); }
 
     /**
      * Get the 16-bit binary string
