@@ -7,7 +7,7 @@ public class InstructionDecoder {
     /**
      * Parameter to hold decoder config
      */
-    private DecoderConfig config;
+    private final DecoderConfig config;
 
     /**
      * Default constructor

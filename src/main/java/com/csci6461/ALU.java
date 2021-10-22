@@ -137,9 +137,9 @@ public class ALU {
      * @param subtraction is the operation is a subtraction
      * @return Returns the CC code.
      */
-    protected CC ImmToReg(int r, boolean subtraction, short imm){
-        CC cc = CC.OKAY;
-        short x = 31;
+    protected int ImmToReg(int r, boolean subtraction, short imm){
+        int cc = -1;
+        final short x = 31;
 
         short operand2 = (short) gpr[r].read();
 

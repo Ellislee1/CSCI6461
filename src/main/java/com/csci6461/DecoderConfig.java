@@ -16,7 +16,7 @@ public class DecoderConfig {
     /**
      * This map enables us to look up instructions by their Opcode
      */
-    private Map<Integer, Instruction> instructions = new HashMap<Integer, Instruction>();
+    private final Map<Integer, Instruction> instructions = new HashMap<>();
 
     /**
      * Decoder config constructor that initializes the map of valid instructions.
@@ -36,6 +36,14 @@ public class DecoderConfig {
         instructions.put(042, new MemOp("STX"));
         instructions.put(004, new MathMR("AMR"));
         instructions.put(005, new MathMR("SMR"));
+        instructions.put(010, new MemOp("JZ"));
+        instructions.put(011, new MemOp("JNE"));
+        instructions.put(012, new MemOp("JCC"));
+        instructions.put(013, new MemOp("JMA"));
+        instructions.put(016, new MemOp("SOB"));
+        instructions.put(014, new MemOp("JSR"));
+        instructions.put(015, new MemOp("RFS"));
+        instructions.put(017, new MemOp("JGE"));
     }
 
     /**

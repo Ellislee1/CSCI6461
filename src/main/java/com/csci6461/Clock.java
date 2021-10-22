@@ -14,7 +14,7 @@ public class Clock {
     /**
      * Storage for the timeout period in ms
      */
-    private long timeoutPeriod;
+    private final long timeoutPeriod;
     
     /**
      * The clock's constructor sets the timeout period

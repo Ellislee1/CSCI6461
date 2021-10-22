@@ -20,7 +20,7 @@ public class MiscInstruction extends Instruction {
     @Override
     int[] getArguments() {
         /* Only possible argument is trap code; so extract bits 12 through 15 and return as int */
-        String bits = String.format("%16s", Integer.toBinaryString((int)super.getInstruction())).replace(' ', '0');
+        String bits = String.format("%16s", Integer.toBinaryString(this.getInstruction())).replace(' ', '0');
         System.out.printf("[MiscInstruction::getArguments] Trap code for instruction %s is %s\n",
                 bits, bits.substring(11,15));
         int trapCode = Integer.parseInt(bits.substring(11,15),2);
