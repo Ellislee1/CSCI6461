@@ -22,6 +22,8 @@ public class ControlUnit {
      * that is loaded at execution
      */
     private static final int MEMORY_SIZE = 2048;     /* Size of main memory */
+    private static final int CACHE_SIZE = 16;        /* Size of cache */
+    private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
     private static final long CLOCK_TIMEOUT = 1000;  /* Clock timeout period */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
@@ -146,7 +148,7 @@ public class ControlUnit {
          * Create main memory of appropriate size
          */
         try {
-            mainMemory = new Cache(MEMORY_SIZE,mar,mbr);
+            mainMemory = new Cache(MEMORY_SIZE,CACHE_SIZE,BLOCK_SIZE,mar,mbr);
         } catch(IOException ioe) {
             System.out.println("Execption while creating computer memory...");
             ioe.printStackTrace();
