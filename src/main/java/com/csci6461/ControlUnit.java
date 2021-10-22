@@ -74,7 +74,7 @@ public class ControlUnit {
     /**
      * Parameter to hold Cache for the computer, which also acts as the interface to Main Memory
      */
-    private Cache mainMemory;
+    protected Cache mainMemory;
 
     /**
      * Parameter to hold the computer's instruction decoder
@@ -341,7 +341,7 @@ public class ControlUnit {
      *
      * @return An int with the condition code (0-3)
      */
-    private void processMathMR(Instruction instruction) throws IOException {
+    private CC processMathMR(Instruction instruction) throws IOException {
         int[] args;
 
         /* Get instruction arguments */

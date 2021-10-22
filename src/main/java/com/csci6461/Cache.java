@@ -350,14 +350,18 @@ public class Cache extends Memory{
      * @return  An array of shorts where the first element is the tag and the rest are
      *          the values in the cache line
      */
-    public short[] getCacheLine(Short n) {
+    public short[] getCacheLine(Short n) throws NullPointerException{
         short[] output = new short[this.blockSize + 1];
 
         /* Get tag for corresponding line number */
         Short tag = tagList[n];
 
         /* Save tag to first element in the array */
-        output[0] = (short) tag;
+        if(tag != null) {
+            output[0] = (short) tag;
+        } else {
+            throw new NullPointerException("Tag is null");
+        }
 
         /* Get line corresponding to tag */
         short[] line = cache.get(tag);
@@ -369,5 +373,9 @@ public class Cache extends Memory{
 
         /* Return output array */
         return output;
+    }
+
+    public int getCacheSize(){
+        return cacheSize;
     }
 }

@@ -3,6 +3,7 @@ package com.csci6461;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ToggleButton;
 import javafx.stage.FileChooser;
 
@@ -118,6 +119,12 @@ public class ComputerController {
     private CheckBox ir_1,ir_2,ir_3,ir_4,ir_5,ir_6,ir_7,ir_8,ir_9,ir_10,ir_11,ir_12,ir_13,ir_14,ir_15,ir_16;
 
     /**
+     * Holds the list view for the cache
+     */
+    @FXML
+    private ListView<String> lstCache;
+
+    /**
      * Label to output the hex code
      */
     @FXML
@@ -150,6 +157,7 @@ public class ComputerController {
      */
     @FXML
     private void initialize() {
+
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
 
@@ -184,6 +192,7 @@ public class ComputerController {
         gpr = new CheckBox[][]{gpr0Controller, gpr1Controller, gpr2Controller, gpr3Controller};
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
 
+        updateCache();
     }
 
     /**
@@ -467,6 +476,7 @@ public class ComputerController {
         setControlCode(cu.controlCode);
         // Memory Fault register
         // setUIElem(cu.mfr,mfrController);
+        updateCache();
     }
 
     /**
@@ -548,5 +558,24 @@ public class ComputerController {
         for(CheckBox x:controller){
             x.setSelected(false);
         }
+    }
+
+    private void updateCache(){
+        // Reset the items
+        lstCache.getItems().clear();
+        lstCache.getItems().add("Tag\tBlock\tValue");
+
+        for(int i=0; i<cu.mainMemory.getCacheSize();i++){
+            try {
+                short[] vals = cu.mainMemory.getCacheLine((short) i);
+                for(int x=1; x<vals.length;x++){
+                    String text = String.format("%d\t%d\t\t%d",vals[0],x,vals[x]);
+                    lstCache.getItems().add(text);
+                }
+            } catch (NullPointerException e){
+                System.out.println("No Tag");
+            }
+        }
+
     }
 }
