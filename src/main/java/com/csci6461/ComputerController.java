@@ -560,6 +560,9 @@ public class ComputerController {
         }
     }
 
+    /**
+     *
+     */
     private void updateCache(){
         // Reset the items
         lstCache.getItems().clear();
@@ -569,13 +572,43 @@ public class ComputerController {
             try {
                 short[] vals = cu.mainMemory.getCacheLine((short) i);
                 for(int x=1; x<vals.length;x++){
-                    String text = String.format("%d\t%d\t\t%d",vals[0],x,vals[x]);
+                    if (vals[x] == 0){
+                        continue;
+                    }
+
+                    String text = String.format("%d\t%d\t\t%s",vals[0],x,getHex(vals[x]));
                     lstCache.getItems().add(text);
                 }
-            } catch (NullPointerException e){
-                System.out.println("No Tag");
+            } catch (NullPointerException ignored){
+
             }
         }
 
+    }
+
+    /**
+     * Gets a formatted hex value
+     * @param val the integer value
+     * @return returns a formatted 16-bit hex string
+     */
+    private String getHex(int val) {
+        String hex = Integer.toHexString(val & 0xFFFF);
+
+        return formatHex(hex);
+    }
+
+    /**
+     * Formats the string to look like a standard 2 byte hex
+     * @param s The unformatted string
+     * @return Returns the formatted string
+     */
+    private String formatHex(String s) {
+        String newS = s;
+        if (s.length() < 4) {
+            for (int i = 0; i < 4 - s.length(); i++){
+                newS = "0"+newS;
+            }
+        }
+        return  "0x"+newS;
     }
 }
