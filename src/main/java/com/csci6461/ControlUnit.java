@@ -74,7 +74,7 @@ public class ControlUnit {
     private Button btnInput;
 
     @FXML
-    private Label lblInput;
+    private Label lblInput,lblOutput;
 
     @FXML
     private TextField txtInput;
@@ -113,12 +113,13 @@ public class ControlUnit {
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
-    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput) {
+    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, Label lblOutput) {
         System.out.println("Initializing control unit...");
 
         this.txtInput = txtInput;
         this.btnInput = btnInput;
         this.lblInput =lblInput;
+        this.lblOutput = lblOutput;
         run = false;
 
         /*
@@ -257,7 +258,7 @@ public class ControlUnit {
     /**
      * Get the first command from memory using the memory class and update the program counter to it.
      */
-    public void get_first_command(){
+    public void getFirstCommand(){
         final short first_code =  (short) mainMemory.get_first_code();
         final boolean[] pc_bits = this.get_bool_array(this.getBinaryString(first_code));
         System.out.println(Arrays.toString(pc_bits));
@@ -524,7 +525,12 @@ public class ControlUnit {
         return false;
     }
 
-    private boolean handleIn(Instruction instruction){
+    /**
+     *
+     * @param instruction The decoded instruction
+     * @return Returns a halt for the program
+     */
+    private boolean processIN(Instruction instruction){
         final int[] args;
         args = instruction.getArguments();
         inReg = args[0];
@@ -533,6 +539,18 @@ public class ControlUnit {
         lblInput.setVisible(true);
         btnInput.disableProperty().set(false);
         return false;
+    }
+
+    /**
+     * Handles displaying an output
+     * @param instruction The decoded instruction
+     */
+    private void processOUT(Instruction instruction){
+        final int[] args;
+        args = instruction.getArguments();
+
+        int val = gpr[args[0]].read();
+        lblOutput.setText(String.valueOf(val));
     }
 
     /**
@@ -646,8 +664,12 @@ public class ControlUnit {
                 increment_pc = processRFS(decodedInstruction);
             }
             case "IN" -> {
-                System.out.println("[ControlUnit::singleStep] Processing In instruction...\n");
-                cont = handleIn(decodedInstruction);
+                System.out.println("[ControlUnit::singleStep] Processing IN instruction...\n");
+                cont = processIN(decodedInstruction);
+            }
+            case "OUT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing OUT instruction...\n");
+                processOUT(decodedInstruction);
             }
         }
 
