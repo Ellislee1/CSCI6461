@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 /**
  * Acts as simulated Control Unit (CU) for simple CSCI 6461 simulated computer.
@@ -546,11 +547,41 @@ public class ControlUnit {
      * @param instruction The decoded instruction
      */
     private void processOUT(Instruction instruction){
-        final int[] args;
-        args = instruction.getArguments();
+        final int[] args = instruction.getArguments();
 
         int val = gpr[args[0]].read();
         lblOutput.setText(String.valueOf(val));
+    }
+
+    private void processSRC(Instruction instruction){
+        final int[] args = instruction.getArguments();
+
+        if(args[3] == 0){
+            return;
+        }
+
+        int val = gpr[args[0]].read();
+
+        if(args[1] == 1){
+            if(args[2] == 1){
+                boolean msb = get_bool_array(getBinaryString((short)val))[0];
+
+                val = val >> args[3];
+                boolean[] new_val = get_bool_array(getBinaryString((short)val));
+                for(int i=0;i<args[3];i++){
+                    new_val[i] = msb;
+                }
+
+                val = toInt(new_val);
+            } else {
+                val = val >>> args[3];
+            }
+        } else {
+            val = val << args[3];
+        }
+
+
+        gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
 
     /**
@@ -670,6 +701,10 @@ public class ControlUnit {
             case "OUT" -> {
                 System.out.println("[ControlUnit::singleStep] Processing OUT instruction...\n");
                 processOUT(decodedInstruction);
+            }
+            case "SRC" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SRC instruction...\n");
+                processSRC(decodedInstruction);
             }
         }
 
@@ -838,6 +873,24 @@ public class ControlUnit {
             System.out.println("[ERROR]:: Could not read memory");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Gets the value as an integer
+     * @return the value as an integer
+     */
+    public int toInt(boolean[] boolSet) {
+        StringBuilder s = new StringBuilder();
+
+        for(boolean val: boolSet){
+            if(val){
+                s.append("1");
+            } else {
+                s.append("0");
+            }
+        }
+
+        return Integer.parseInt(s.toString(),2);
     }
     
 }
