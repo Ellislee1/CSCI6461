@@ -63,10 +63,7 @@ public class ALU {
      */
     ALU(Register[] gpr, Register mbr) {
         /* Allocate storage for GPRs */
-        this.gpr = new Register[gpr.length];
-
-        /* Iterate through GPR array and save GPR objects */
-        System.arraycopy(gpr, 0, this.gpr, 0, gpr.length);
+        this.gpr = gpr;
 
         /* Save MBR to local MBR parameter */
         this.mbr = mbr;
