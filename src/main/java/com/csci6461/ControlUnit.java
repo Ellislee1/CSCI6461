@@ -374,9 +374,7 @@ public class ControlUnit {
         this.getData(args[3],args[1],args[2]);
 
         /* Call operate on ALU with Opcode and return condition code */
-
-        cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
-        this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+        cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
     /**
