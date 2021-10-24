@@ -2,7 +2,6 @@ package com.csci6461;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -135,7 +134,7 @@ public class ComputerController {
     private TextField txtInput;
 
     @FXML Button btnSubmit;
-    @FXML Label lblInput;
+    @FXML Label lblInput, lblOutput;
 
     /**
      * Array for the toggle buttons
@@ -168,7 +167,7 @@ public class ComputerController {
         inputInt = 0;
         txtInput.textProperty().set("0");
 
-        cu = new ControlUnit(txtInput,btnSubmit,lblInput);
+        cu = new ControlUnit(txtInput,btnSubmit,lblInput,lblOutput);
 
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
@@ -430,7 +429,7 @@ public class ComputerController {
                 cu.writeDataToMemory(memory, value);
 
                 // Update the program counters with the first command
-                cu.get_first_command();
+                cu.getFirstCommand();
                 // Update the UI elements
                 setUIElem(cu.pc, pcController);
             }

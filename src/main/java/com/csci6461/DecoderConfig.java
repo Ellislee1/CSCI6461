@@ -45,6 +45,7 @@ public class DecoderConfig {
         instructions.put(015, new MemOp("RFS"));
         instructions.put(017, new MemOp("JGE"));
         instructions.put(061, new IoOp("IN"));
+        instructions.put(062, new IoOp("OUT"));
     }
 
     /**
