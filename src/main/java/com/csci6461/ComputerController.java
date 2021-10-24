@@ -10,7 +10,6 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -122,7 +121,7 @@ public class ComputerController {
      * Holds the list view for the cache
      */
     @FXML
-    private ListView<String> lstCache;
+    private ListView<String> lstCache, lstMemory;
 
     /**
      * Label to output the hex code
@@ -193,6 +192,7 @@ public class ComputerController {
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
 
         updateCache();
+        updateMemory();
     }
 
     /**
@@ -394,6 +394,7 @@ public class ComputerController {
             System.out.println("ERROR: Loading program into memory!");
             e.printStackTrace();
         }
+        updateMemory();
 
     }
 
@@ -477,6 +478,7 @@ public class ComputerController {
         // Memory Fault register
         // setUIElem(cu.mfr,mfrController);
         updateCache();
+        updateMemory();
     }
 
     /**
@@ -561,12 +563,12 @@ public class ComputerController {
     }
 
     /**
-     *
+     * Cache view is now updated
      */
     private void updateCache(){
         // Reset the items
         lstCache.getItems().clear();
-        lstCache.getItems().add("Tag\tBlock\tValue");
+        lstCache.getItems().add("Tag\t\tBlock\tValue");
 
         for(int i=0; i<cu.mainMemory.getCacheSize();i++){
             try {
@@ -576,11 +578,34 @@ public class ComputerController {
                         continue;
                     }
 
-                    String text = String.format("%d\t%d\t\t%s",vals[0],x,getHex(vals[x]));
+                    String text = String.format("%d\t\t%d\t\t%s",vals[0],x,getHex(vals[x]));
                     lstCache.getItems().add(text);
                 }
             } catch (NullPointerException ignored){
 
+            }
+        }
+
+    }
+
+    /**
+     * Memory view is now updated
+     */
+    private void updateMemory(){
+        // Reset the items
+        lstMemory.getItems().clear();
+        lstMemory.refresh();
+        lstMemory.getItems().add("Location\t\tValue");
+        short[] data = cu.mainMemory.getData();
+
+        for(int i=0; i<data.length;i++){
+            short val = data[i];
+            if(val != 0){
+                String text = String.format("%s\t\t%s",getHex(i),getHex(val));
+                lstMemory.getItems().add(text);
+            } else if(i <= 6){
+                String text = String.format("%s\t\t%s",getHex(i),getHex(val));
+                lstMemory.getItems().add(text);
             }
         }
 
@@ -593,7 +618,6 @@ public class ComputerController {
      */
     private String getHex(int val) {
         String hex = Integer.toHexString(val & 0xFFFF);
-
         return formatHex(hex);
     }
 
@@ -609,6 +633,6 @@ public class ComputerController {
                 newS = "0"+newS;
             }
         }
-        return  "0x"+newS;
+        return  "0x"+newS.toUpperCase();
     }
 }

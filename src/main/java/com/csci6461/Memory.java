@@ -130,6 +130,14 @@ public class Memory {
     }
 
     /**
+     * Get the data
+     * @return Returns the memory data Array
+     */
+    public short[] getData(){
+        return this.data;
+    }
+
+    /**
      * Formats the string to look like a standard 2 byte hex
      * @param s The unformatted string
      * @return Returns the formatted string

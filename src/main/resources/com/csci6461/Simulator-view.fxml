@@ -483,6 +483,17 @@
       <Button fx:id="btnStore" layoutX="1074.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStoreClick" prefHeight="35.0" prefWidth="60.0" text="Store" />
       <Button fx:id="btnStep11" layoutX="1073.0" layoutY="659.0" mnemonicParsing="false" onAction="#onStorePClick" prefHeight="35.0" prefWidth="60.0" text="Store +" />
       <Button fx:id="btnLoad" layoutX="1141.0" layoutY="619.0" mnemonicParsing="false" onAction="#onLoadClick" prefHeight="35.0" prefWidth="60.0" text="Load" />
-      <ListView fx:id="lstCache" layoutX="908.0" layoutY="303.0" prefHeight="293.0" prefWidth="308.0" />
+      <ListView fx:id="lstCache" layoutX="988.0" layoutY="335.0" prefHeight="261.0" prefWidth="228.0" />
+      <Label layoutX="992.0" layoutY="315.0" text="Cache list">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <ListView fx:id="lstMemory" layoutX="754.0" layoutY="335.0" prefHeight="261.0" prefWidth="228.0" />
+      <Label layoutX="754.0" layoutY="315.0" text="Memory List">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
    </children>
 </Pane>
