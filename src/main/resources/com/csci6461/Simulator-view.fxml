@@ -483,5 +483,34 @@
       <Button fx:id="btnStore" layoutX="1074.0" layoutY="619.0" mnemonicParsing="false" onAction="#onStoreClick" prefHeight="35.0" prefWidth="60.0" text="Store" />
       <Button fx:id="btnStep11" layoutX="1073.0" layoutY="659.0" mnemonicParsing="false" onAction="#onStorePClick" prefHeight="35.0" prefWidth="60.0" text="Store +" />
       <Button fx:id="btnLoad" layoutX="1141.0" layoutY="619.0" mnemonicParsing="false" onAction="#onLoadClick" prefHeight="35.0" prefWidth="60.0" text="Load" />
+      <ListView fx:id="lstCache" layoutX="988.0" layoutY="335.0" prefHeight="261.0" prefWidth="228.0" />
+      <Label layoutX="992.0" layoutY="315.0" text="Cache list">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <ListView fx:id="lstMemory" layoutX="754.0" layoutY="335.0" prefHeight="261.0" prefWidth="228.0" />
+      <Label layoutX="754.0" layoutY="315.0" text="Memory List">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <TextField fx:id="txtInput" disable="true" layoutX="521.0" layoutY="348.0" />
+      <Button fx:id="btnSubmit" disable="true" layoutX="682.0" layoutY="348.0" mnemonicParsing="false" onAction="#onInput" text="Submit" />
+      <Label fx:id="lblInput" layoutX="428.0" layoutY="351.0" text="Input Integer" visible="false">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="lblInput1" layoutX="467.0" layoutY="386.0" text="Output">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
+      <Label fx:id="lblOutput" layoutX="519.0" layoutY="386.0" text="Null">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
    </children>
 </Pane>

@@ -3,6 +3,11 @@
  */
 package com.csci6461;
 
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -63,6 +68,18 @@ public class ControlUnit {
      */
     public Register ir;
 
+    protected int inReg;
+
+    @FXML
+    private Button btnInput;
+
+    @FXML
+    private Label lblInput,lblOutput;
+
+    @FXML
+    private TextField txtInput;
+
+
 //    /**
 //     * Parameter to hold the computer's main memory
 //     * NOTE: Setting to private for now since I don't think memory needs to
@@ -74,7 +91,7 @@ public class ControlUnit {
     /**
      * Parameter to hold Cache for the computer, which also acts as the interface to Main Memory
      */
-    private Cache mainMemory;
+    protected Cache mainMemory;
 
     /**
      * Parameter to hold the computer's instruction decoder
@@ -90,12 +107,20 @@ public class ControlUnit {
 
     private final int active_cc;
 
+    protected  boolean run;
+
     /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
-    public ControlUnit() {
+    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, Label lblOutput) {
         System.out.println("Initializing control unit...");
+
+        this.txtInput = txtInput;
+        this.btnInput = btnInput;
+        this.lblInput =lblInput;
+        this.lblOutput = lblOutput;
+        run = false;
 
         /*
          * Initialize condition code to OKAY
@@ -233,7 +258,7 @@ public class ControlUnit {
     /**
      * Get the first command from memory using the memory class and update the program counter to it.
      */
-    public void get_first_command(){
+    public void getFirstCommand(){
         final short first_code =  (short) mainMemory.get_first_code();
         final boolean[] pc_bits = this.get_bool_array(this.getBinaryString(first_code));
         System.out.println(Arrays.toString(pc_bits));
@@ -339,7 +364,6 @@ public class ControlUnit {
      *
      * @param instruction Class with decode instruction
      *
-     * @return An int with the condition code (0-3)
      */
     private void processMathMR(Instruction instruction) throws IOException {
         int[] args;
@@ -351,9 +375,7 @@ public class ControlUnit {
         this.getData(args[3],args[1],args[2]);
 
         /* Call operate on ALU with Opcode and return condition code */
-
-        cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
-        return this.alu.operate(instruction.getName(),args[0], (short)args[3]);
+        cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
     /**
@@ -504,6 +526,34 @@ public class ControlUnit {
     }
 
     /**
+     *
+     * @param instruction The decoded instruction
+     * @return Returns a halt for the program
+     */
+    private boolean processIN(Instruction instruction){
+        final int[] args;
+        args = instruction.getArguments();
+        inReg = args[0];
+
+        txtInput.disableProperty().set(false);
+        lblInput.setVisible(true);
+        btnInput.disableProperty().set(false);
+        return false;
+    }
+
+    /**
+     * Handles displaying an output
+     * @param instruction The decoded instruction
+     */
+    private void processOUT(Instruction instruction){
+        final int[] args;
+        args = instruction.getArguments();
+
+        int val = gpr[args[0]].read();
+        lblOutput.setText(String.valueOf(val));
+    }
+
+    /**
      * Method to execute single step by getting the next instruction in
      * memory, decoding it and executing it
      *
@@ -541,6 +591,7 @@ public class ControlUnit {
         /* Check to see if the code is a "special" instruction */
         if(Objects.equals(name, "HLT")) {
             System.out.println("[ControlUnit::singleStep] Processing Halt instruction...\n");
+            run = false;
             return(false);
         } else if(Objects.equals(name, "TRAP")) {
             System.out.println("[ControlUnit::singleStep] Processing Trap instruction...\n");
@@ -549,6 +600,7 @@ public class ControlUnit {
         }
 
         boolean increment_pc = true;
+        boolean cont = true;
 
         switch (name) {
             case "LDR" -> {
@@ -611,6 +663,14 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing RFS instruction...\n");
                 increment_pc = processRFS(decodedInstruction);
             }
+            case "IN" -> {
+                System.out.println("[ControlUnit::singleStep] Processing IN instruction...\n");
+                cont = processIN(decodedInstruction);
+            }
+            case "OUT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing OUT instruction...\n");
+                processOUT(decodedInstruction);
+            }
         }
 
         if (increment_pc)
@@ -621,7 +681,7 @@ public class ControlUnit {
             this.pc.set_bits(_new_count);
         }
 
-        return(true);
+        return(cont);
     }
 
     /**
@@ -753,7 +813,7 @@ public class ControlUnit {
      * @param binaryString The binary string to convert
      * @return the boolean array.
      */
-    private boolean[] get_bool_array(final String binaryString) {
+    protected boolean[] get_bool_array(final String binaryString) {
 
         final char[] binary = binaryString.toCharArray(); // Convert to character array
         final boolean[] data = new boolean[binary.length]; // Create a new boolean array

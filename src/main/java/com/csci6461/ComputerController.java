@@ -1,15 +1,13 @@
 package com.csci6461;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -21,7 +19,7 @@ public class ComputerController {
     /**
      * Control unit for the system
      */
-    private final ControlUnit cu = new ControlUnit();
+    private ControlUnit cu;
 
     /**
      * Toggle buttons for the address
@@ -118,6 +116,12 @@ public class ComputerController {
     private CheckBox ir_1,ir_2,ir_3,ir_4,ir_5,ir_6,ir_7,ir_8,ir_9,ir_10,ir_11,ir_12,ir_13,ir_14,ir_15,ir_16;
 
     /**
+     * Holds the list view for the cache
+     */
+    @FXML
+    private ListView<String> lstCache, lstMemory;
+
+    /**
      * Label to output the hex code
      */
     @FXML
@@ -125,6 +129,12 @@ public class ComputerController {
 
     @FXML
     private CheckBox ch_under, ch_over, ch_div, ch_eq;
+
+    @FXML
+    private TextField txtInput;
+
+    @FXML Button btnSubmit;
+    @FXML Label lblInput, lblOutput;
 
     /**
      * Array for the toggle buttons
@@ -144,12 +154,21 @@ public class ComputerController {
      */
     private CheckBox[][] gpr,ixr;
 
+    private final String intReg =  "^[0-9]*$";
+
+    private int inputInt;
+
     /**
      * Initializer for the program.
      * This will set up all the controllers.
      */
     @FXML
     private void initialize() {
+        inputInt = 0;
+        txtInput.textProperty().set("0");
+
+        cu = new ControlUnit(txtInput,btnSubmit,lblInput,lblOutput);
+
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
 
@@ -184,6 +203,26 @@ public class ComputerController {
         gpr = new CheckBox[][]{gpr0Controller, gpr1Controller, gpr2Controller, gpr3Controller};
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
 
+        txtInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(Objects.equals(newValue, "")){
+                txtInput.textProperty().set("0");
+                inputInt = 0;
+                return;
+            }
+
+            if(!newValue.matches(intReg)){
+                txtInput.textProperty().set(oldValue);
+            } else if (Integer.parseInt(newValue,10) > 32767){
+                txtInput.textProperty().set("32767");
+                inputInt = 32767;
+            } else {
+                inputInt = Integer.parseInt(newValue,10);
+                txtInput.textProperty().set(String.valueOf(inputInt));
+            }
+        });
+
+        updateCache();
+        updateMemory();
     }
 
     /**
@@ -295,6 +334,21 @@ public class ComputerController {
         lblCode.setText(hex);
     }
 
+    @FXML
+    private void onInput() throws InterruptedException {
+        boolean[] boolIn = cu.get_bool_array(Integer.toBinaryString(inputInt&0xFFFF));
+
+        cu.gpr[cu.inReg].set_bits(boolIn);
+        updateUI();
+        txtInput.disableProperty().set(true);
+        lblInput.setVisible(false);
+        btnSubmit.disableProperty().set(true);
+
+        if(cu.run){
+            this.onRunClick();
+        }
+    }
+
 
 
     /**
@@ -375,7 +429,7 @@ public class ComputerController {
                 cu.writeDataToMemory(memory, value);
 
                 // Update the program counters with the first command
-                cu.get_first_command();
+                cu.getFirstCommand();
                 // Update the UI elements
                 setUIElem(cu.pc, pcController);
             }
@@ -385,6 +439,7 @@ public class ComputerController {
             System.out.println("ERROR: Loading program into memory!");
             e.printStackTrace();
         }
+        updateMemory();
 
     }
 
@@ -414,6 +469,7 @@ public class ComputerController {
     @FXML
     protected void onRunClick() throws InterruptedException {
         boolean run  = true;
+        cu.run = true;
 
         while(run){
             try {
@@ -446,6 +502,10 @@ public class ComputerController {
         updateUI();
     }
 
+    /**
+     * Loading a value into memory
+     * @throws IOException If a value can not be loaded into memory
+     */
     @FXML
     protected void onLoadClick() throws IOException {
         cu.mbr.load(cu.loadDataFromMemory(cu.mar.read()));
@@ -467,6 +527,8 @@ public class ComputerController {
         setControlCode(cu.controlCode);
         // Memory Fault register
         // setUIElem(cu.mfr,mfrController);
+        updateCache();
+        updateMemory();
     }
 
     /**
@@ -548,5 +610,79 @@ public class ComputerController {
         for(CheckBox x:controller){
             x.setSelected(false);
         }
+    }
+
+    /**
+     * Cache view is now updated
+     */
+    private void updateCache(){
+        // Reset the items
+        lstCache.getItems().clear();
+        lstCache.getItems().add("Tag\t\tBlock\tValue");
+
+        for(int i=0; i<cu.mainMemory.getCacheSize();i++){
+            try {
+                short[] vals = cu.mainMemory.getCacheLine((short) i);
+                for(int x=1; x<vals.length;x++){
+                    if (vals[x] == 0){
+                        continue;
+                    }
+
+                    String text = String.format("%d\t\t%d\t\t%s",vals[0],x,getHex(vals[x]));
+                    lstCache.getItems().add(text);
+                }
+            } catch (NullPointerException ignored){
+
+            }
+        }
+
+    }
+
+    /**
+     * Memory view is now updated
+     */
+    private void updateMemory(){
+        // Reset the items
+        lstMemory.getItems().clear();
+        lstMemory.refresh();
+        lstMemory.getItems().add("Location\t\tValue");
+        short[] data = cu.mainMemory.getData();
+
+        for(int i=0; i<data.length;i++){
+            short val = data[i];
+            if(val != 0){
+                String text = String.format("%s\t\t%s",getHex(i),getHex(val));
+                lstMemory.getItems().add(text);
+            } else if(i <= 6){
+                String text = String.format("%s\t\t%s",getHex(i),getHex(val));
+                lstMemory.getItems().add(text);
+            }
+        }
+
+    }
+
+    /**
+     * Gets a formatted hex value
+     * @param val the integer value
+     * @return returns a formatted 16-bit hex string
+     */
+    private String getHex(int val) {
+        String hex = Integer.toHexString(val & 0xFFFF);
+        return formatHex(hex);
+    }
+
+    /**
+     * Formats the string to look like a standard 2 byte hex
+     * @param s The unformatted string
+     * @return Returns the formatted string
+     */
+    private String formatHex(String s) {
+        String newS = s;
+        if (s.length() < 4) {
+            for (int i = 0; i < 4 - s.length(); i++){
+                newS = "0"+newS;
+            }
+        }
+        return  "0x"+newS.toUpperCase();
     }
 }

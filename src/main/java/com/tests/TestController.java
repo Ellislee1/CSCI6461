@@ -41,7 +41,7 @@ public class TestController {
         System.out.println("Starting test controller");
 
         /* Create new control unit */
-        ControlUnit cu = new ControlUnit();
+        ControlUnit cu = new ControlUnit(null,null,null, null);
 
         /* Print cache line 0 */
 //        cu.printCacheLine(0);
