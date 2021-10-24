@@ -3,6 +3,11 @@
  */
 package com.csci6461;
 
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -63,6 +68,18 @@ public class ControlUnit {
      */
     public Register ir;
 
+    protected int inReg;
+
+    @FXML
+    private Button btnInput;
+
+    @FXML
+    private Label lblInput;
+
+    @FXML
+    private TextField txtInput;
+
+
 //    /**
 //     * Parameter to hold the computer's main memory
 //     * NOTE: Setting to private for now since I don't think memory needs to
@@ -90,12 +107,19 @@ public class ControlUnit {
 
     private final int active_cc;
 
+    protected  boolean run;
+
     /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
-    public ControlUnit() {
+    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput) {
         System.out.println("Initializing control unit...");
+
+        this.txtInput = txtInput;
+        this.btnInput = btnInput;
+        this.lblInput =lblInput;
+        run = false;
 
         /*
          * Initialize condition code to OKAY
@@ -339,9 +363,8 @@ public class ControlUnit {
      *
      * @param instruction Class with decode instruction
      *
-     * @return An int with the condition code (0-3)
      */
-    private CC processMathMR(Instruction instruction) throws IOException {
+    private void processMathMR(Instruction instruction) throws IOException {
         int[] args;
 
         /* Get instruction arguments */
@@ -353,7 +376,7 @@ public class ControlUnit {
         /* Call operate on ALU with Opcode and return condition code */
 
         cc = alu.operate(instruction.getName(),args[0], (short)args[3]);
-        return this.alu.operate(instruction.getName(),args[0], (short)args[3]);
+        this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
     /**
@@ -503,6 +526,17 @@ public class ControlUnit {
         return false;
     }
 
+    private boolean handleIn(Instruction instruction){
+        final int[] args;
+        args = instruction.getArguments();
+        inReg = args[0];
+
+        txtInput.disableProperty().set(false);
+        lblInput.setVisible(true);
+        btnInput.disableProperty().set(false);
+        return false;
+    }
+
     /**
      * Method to execute single step by getting the next instruction in
      * memory, decoding it and executing it
@@ -541,6 +575,7 @@ public class ControlUnit {
         /* Check to see if the code is a "special" instruction */
         if(Objects.equals(name, "HLT")) {
             System.out.println("[ControlUnit::singleStep] Processing Halt instruction...\n");
+            run = false;
             return(false);
         } else if(Objects.equals(name, "TRAP")) {
             System.out.println("[ControlUnit::singleStep] Processing Trap instruction...\n");
@@ -549,6 +584,7 @@ public class ControlUnit {
         }
 
         boolean increment_pc = true;
+        boolean cont = true;
 
         switch (name) {
             case "LDR" -> {
@@ -611,6 +647,10 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing RFS instruction...\n");
                 increment_pc = processRFS(decodedInstruction);
             }
+            case "IN" -> {
+                System.out.println("[ControlUnit::singleStep] Processing In instruction...\n");
+                cont = handleIn(decodedInstruction);
+            }
         }
 
         if (increment_pc)
@@ -621,7 +661,7 @@ public class ControlUnit {
             this.pc.set_bits(_new_count);
         }
 
-        return(true);
+        return(cont);
     }
 
     /**
@@ -753,7 +793,7 @@ public class ControlUnit {
      * @param binaryString The binary string to convert
      * @return the boolean array.
      */
-    private boolean[] get_bool_array(final String binaryString) {
+    protected boolean[] get_bool_array(final String binaryString) {
 
         final char[] binary = binaryString.toCharArray(); // Convert to character array
         final boolean[] data = new boolean[binary.length]; // Create a new boolean array

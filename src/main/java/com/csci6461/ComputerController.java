@@ -1,15 +1,14 @@
 package com.csci6461;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -21,7 +20,7 @@ public class ComputerController {
     /**
      * Control unit for the system
      */
-    private final ControlUnit cu = new ControlUnit();
+    private ControlUnit cu;
 
     /**
      * Toggle buttons for the address
@@ -132,6 +131,12 @@ public class ComputerController {
     @FXML
     private CheckBox ch_under, ch_over, ch_div, ch_eq;
 
+    @FXML
+    private TextField txtInput;
+
+    @FXML Button btnSubmit;
+    @FXML Label lblInput;
+
     /**
      * Array for the toggle buttons
      */
@@ -150,12 +155,20 @@ public class ComputerController {
      */
     private CheckBox[][] gpr,ixr;
 
+    private final String intReg =  "^[0-9]*$";
+
+    private int inputInt;
+
     /**
      * Initializer for the program.
      * This will set up all the controllers.
      */
     @FXML
     private void initialize() {
+        inputInt = 0;
+        txtInput.textProperty().set("0");
+
+        cu = new ControlUnit(txtInput,btnSubmit,lblInput);
 
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
@@ -190,6 +203,24 @@ public class ComputerController {
 
         gpr = new CheckBox[][]{gpr0Controller, gpr1Controller, gpr2Controller, gpr3Controller};
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
+
+        txtInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            if(Objects.equals(newValue, "")){
+                txtInput.textProperty().set("0");
+                inputInt = 0;
+                return;
+            }
+
+            if(!newValue.matches(intReg)){
+                txtInput.textProperty().set(oldValue);
+            } else if (Integer.parseInt(newValue,10) > 32767){
+                txtInput.textProperty().set("32767");
+                inputInt = 32767;
+            } else {
+                inputInt = Integer.parseInt(newValue,10);
+                txtInput.textProperty().set(String.valueOf(inputInt));
+            }
+        });
 
         updateCache();
         updateMemory();
@@ -302,6 +333,21 @@ public class ComputerController {
         // Set label to the hex code.
         hex = "0x"+hex;
         lblCode.setText(hex);
+    }
+
+    @FXML
+    private void onInput() throws InterruptedException {
+        boolean[] boolIn = cu.get_bool_array(Integer.toBinaryString(inputInt&0xFFFF));
+
+        cu.gpr[cu.inReg].set_bits(boolIn);
+        updateUI();
+        txtInput.disableProperty().set(true);
+        lblInput.setVisible(false);
+        btnSubmit.disableProperty().set(true);
+
+        if(cu.run){
+            this.onRunClick();
+        }
     }
 
 
@@ -424,6 +470,7 @@ public class ComputerController {
     @FXML
     protected void onRunClick() throws InterruptedException {
         boolean run  = true;
+        cu.run = true;
 
         while(run){
             try {
@@ -456,6 +503,10 @@ public class ComputerController {
         updateUI();
     }
 
+    /**
+     * Loading a value into memory
+     * @throws IOException If a value can not be loaded into memory
+     */
     @FXML
     protected void onLoadClick() throws IOException {
         cu.mbr.load(cu.loadDataFromMemory(cu.mar.read()));

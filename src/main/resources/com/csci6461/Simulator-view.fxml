@@ -495,5 +495,12 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
+      <TextField fx:id="txtInput" disable="true" layoutX="521.0" layoutY="348.0" />
+      <Button fx:id="btnSubmit" disable="true" layoutX="682.0" layoutY="348.0" mnemonicParsing="false" onAction="#onInput" text="Submit" />
+      <Label fx:id="lblInput" layoutX="428.0" layoutY="351.0" text="Input Integer">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font>
+      </Label>
    </children>
 </Pane>
