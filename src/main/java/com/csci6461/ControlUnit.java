@@ -553,6 +553,10 @@ public class ControlUnit {
         lblOutput.setText(String.valueOf(val));
     }
 
+    /**
+     * Processes a logical and arithemetic rotate
+     * @param instruction The decoded instruction
+     */
     private void processSRC(Instruction instruction){
         final int[] args = instruction.getArguments();
 
@@ -562,8 +566,10 @@ public class ControlUnit {
 
         int val = gpr[args[0]].read();
 
-        if(args[1] == 1){
-            if(args[2] == 1){
+        // If a Right Shift
+        if(args[2] == 1){
+            // If a arithmetic shift
+            if(args[1] == 1){
                 boolean msb = get_bool_array(getBinaryString((short)val))[0];
 
                 val = val >> args[3];
@@ -582,6 +588,58 @@ public class ControlUnit {
 
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
+    }
+
+    public void processRRC(Instruction instruction) {
+        final int[] args = instruction.getArguments();
+
+        if(args[3] == 0 || args[3] % 16 == 0){
+            return;
+        }
+
+        int val = gpr[args[0]].read();
+        boolean[] msb = get_bool_array(getBinaryString((short)val));
+        boolean over_bit;
+
+        // If Right rotate.
+        if(args[2] == 1){
+            // If a arithmetic rotate
+            if(args[1] == 1) {
+                boolean preserved_bit = msb[0];
+
+                for(int x = 0; x< args[3];x++) {
+                    over_bit = msb[msb.length - 1];
+                    for (int i = msb.length-1; i > 1; i--) {
+                        msb[i] = msb[i - 1];
+                    }
+                    msb[0] = preserved_bit;
+
+                }
+
+            } else {
+                for(int x = 0; x< args[3];x++) {
+                    over_bit = msb[msb.length - 1];
+                    for (int i = msb.length-1; i > 0; i--) {
+                        msb[i] = msb[i - 1];
+                    }
+                    msb[0] = over_bit;
+
+                }
+
+            }
+        } else {
+            for(int x = 0; x< args[3];x++) {
+                over_bit = msb[0];
+                for (int i = 0; i < msb.length-1; i++) {
+                    msb[i] = msb[i + 1];
+                }
+                msb[msb.length-1] = over_bit;
+
+            }
+
+        }
+
+        gpr[args[0]].set_bits(msb);
     }
 
     /**
@@ -705,6 +763,10 @@ public class ControlUnit {
             case "SRC" -> {
                 System.out.println("[ControlUnit::singleStep] Processing SRC instruction...\n");
                 processSRC(decodedInstruction);
+            }
+            case "RRC" -> {
+                System.out.println("[ControlUnit::singleStep] Processing RRC instruction...\n");
+                processRRC(decodedInstruction);
             }
         }
 
