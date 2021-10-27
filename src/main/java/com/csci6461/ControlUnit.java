@@ -527,7 +527,7 @@ public class ControlUnit {
     }
 
     /**
-     *
+     * Handles taking data as an input
      * @param instruction The decoded instruction
      * @return Returns a halt for the program
      */
