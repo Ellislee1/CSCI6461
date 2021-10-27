@@ -671,6 +671,15 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing OUT instruction...\n");
                 processOUT(decodedInstruction);
             }
+            case "AIR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AIR instruction...\n");
+                this.processMathMR(decodedInstruction);
+
+            }
+            case "SIR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SIR instruction...\n");
+                this.processMathMR(decodedInstruction);
+            }
         }
 
         if (increment_pc)
