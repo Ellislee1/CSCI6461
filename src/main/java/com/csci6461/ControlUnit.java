@@ -29,7 +29,6 @@ public class ControlUnit {
     private static final int MEMORY_SIZE = 2048;     /* Size of main memory */
     private static final int CACHE_SIZE = 16;        /* Size of cache */
     private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
-    private static final long CLOCK_TIMEOUT = 1000;  /* Clock timeout period */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
 
@@ -71,13 +70,15 @@ public class ControlUnit {
     protected int inReg;
 
     @FXML
-    private Button btnInput;
+    private final Button btnInput;
 
     @FXML
-    private Label lblInput,lblOutput;
+    private final Label lblInput;
+    @FXML
+    private final Label lblOutput;
 
     @FXML
-    private TextField txtInput;
+    private final TextField txtInput;
 
 
 //    /**
@@ -185,14 +186,6 @@ public class ControlUnit {
          * Create ALU
          */
         this.alu = new ALU(this.gpr, this.mbr);
-
-        /*
-         * Create system clock and initialize to configured timeout
-         */
-        /*
-         * Parameter to hold system clock
-         */
-        Clock systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
 
         this.controlCode = CC.OKAY;
 
@@ -764,13 +757,6 @@ public class ControlUnit {
     public void printMem(){
         this.mainMemory.printMemory();
     }
-
-    /**
-     * Prints a line in the cache
-     *
-     * @param n Integer number of line to print
-     */
-    public void printCacheLine(Short n) { mainMemory.printCacheLine(n); }
 
     /**
      * Get the 16-bit binary string

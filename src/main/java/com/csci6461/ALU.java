@@ -1,7 +1,6 @@
 package com.csci6461;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * This holds all processes in the ALU
@@ -136,7 +135,6 @@ public class ALU {
      */
     protected CC ImmToReg(int r, boolean subtraction, short imm){
         CC cc = CC.OKAY;
-        final short x = 31;
 
         short operand2 = (short) gpr[r].read();
 
