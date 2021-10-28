@@ -7,6 +7,8 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -119,7 +121,7 @@ public class ComputerController {
      * Holds the list view for the cache
      */
     @FXML
-    private ListView<String> lstCache, lstMemory;
+    private ListView<String> lstCache, lstMemory, lstOutput;
 
     /**
      * Label to output the hex code
@@ -158,6 +160,8 @@ public class ComputerController {
 
     private int inputInt;
 
+    private ArrayList<Integer> outList;
+
     /**
      * Initializer for the program.
      * This will set up all the controllers.
@@ -166,8 +170,10 @@ public class ComputerController {
     private void initialize() {
         inputInt = 0;
         txtInput.textProperty().set("0");
+        outList = new ArrayList<Integer>();
 
-        cu = new ControlUnit(txtInput,btnSubmit,lblInput,lblOutput);
+
+        cu = new ControlUnit(txtInput,btnSubmit,lblInput,outList);
 
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
@@ -531,6 +537,7 @@ public class ComputerController {
         // setUIElem(cu.mfr,mfrController);
         updateCache();
         updateMemory();
+        updateOutput();
     }
 
     /**
@@ -659,6 +666,21 @@ public class ComputerController {
                 String text = String.format("%s\t\t%s",getHex(i),getHex(val));
                 lstMemory.getItems().add(text);
             }
+        }
+
+    }
+
+    /**
+     * Output view is now updated
+     */
+    private void updateOutput(){
+        // Reset the items
+        lstOutput.getItems().clear();
+        lstOutput.refresh();
+        outList = cu.lstOutput;
+
+        for(int x : outList){
+            lstOutput.getItems().add("> "+String.valueOf(x));
         }
 
     }

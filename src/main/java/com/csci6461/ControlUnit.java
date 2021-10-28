@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -70,8 +71,9 @@ public class ControlUnit {
 
     @FXML
     private final Label lblInput;
-    @FXML
-    private final Label lblOutput;
+
+
+    protected ArrayList<Integer> lstOutput;
 
     @FXML
     private final TextField txtInput;
@@ -113,13 +115,13 @@ public class ControlUnit {
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
-    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, Label lblOutput) {
+    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, ArrayList<Integer> output) {
         System.out.println("Initializing control unit...");
 
         this.txtInput = txtInput;
         this.btnInput = btnInput;
         this.lblInput =lblInput;
-        this.lblOutput = lblOutput;
+        this.lstOutput = output;
         run = false;
         
         /*
@@ -365,9 +367,6 @@ public class ControlUnit {
         } else {
             controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
         }
-
-        /* Call operate on ALU with Opcode and return condition code */
-        this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
     /**
@@ -562,7 +561,7 @@ public class ControlUnit {
         final int[] args = instruction.getArguments();
 
         int val = gpr[args[0]].read();
-        lblOutput.setText(String.valueOf(val));
+        lstOutput.add(val);
     }
 
     /**
