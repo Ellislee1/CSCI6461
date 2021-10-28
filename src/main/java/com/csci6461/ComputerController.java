@@ -433,10 +433,12 @@ public class ComputerController {
                 // Update the UI elements
                 setUIElem(cu.pc, pcController);
             }
-        } catch (FileNotFoundException | RuntimeException e){
+        } catch (FileNotFoundException e){
             System.out.println("ERROR: File not found!");
         } catch (IOException e) {
             System.out.println("ERROR: Loading program into memory!");
+            e.printStackTrace();
+        } catch (RuntimeException e) {
             e.printStackTrace();
         }
         updateMemory();

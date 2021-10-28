@@ -48,6 +48,8 @@ public class DecoderConfig {
         instructions.put(062, new IoOp("OUT"));
         instructions.put(006,new ImMath("AIR"));
         instructions.put(007,new ImMath("SIR"));
+        instructions.put(031, new BitWiseOperator("SRC"));
+        instructions.put(032, new BitWiseOperator("RRC"));
     }
 
     /**
