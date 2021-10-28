@@ -84,8 +84,105 @@ public class ALU {
             case "SMR" -> MemToReg(r, true);
             case "AIR" -> ImmToReg(r, false, imm);
             case "SIR" -> ImmToReg(r, true, imm);
+            case "MLT" -> RegToReg("MLT", r, imm);
+            case "DVD" -> RegToReg("DVD", r, imm);
+            case "TRR" -> RegToReg("TRR", r, imm);
+            case "AND" -> RegToReg("AND", r, imm);
+            case "ORR" -> RegToReg("ORR", r, imm);
+            case "NOT" -> RegToReg("NOT", r, imm);
+
             default -> CC.OKAY;
         };
+    }
+
+    /**
+     * This method implements register to register math and logic operations
+     *
+     * @param code String containing the three-letter code of the operation
+     * @param rx Int containing the number of the register containing the first operand
+     * @param ry Short containing the number of the register containing the second operand
+     *
+     * @return The condition code resulting from the operation: OVERFLOW or DIVZERO if overflow
+     *         or divide by zero, or EQUALORNOT if operands are equal
+     * @throws IOException When a register load throws and exception
+     */
+    protected CC RegToReg(String code, int rx, short ry) throws IOException {
+        CC cc = CC.OKAY;
+
+        System.out.printf("[ALU::RegToReg] Processing logic operation %s with rx = %d, ry = %d\n",
+                code, rx, ry);
+
+        /* Make sure rx and ry are valid for divide and multiply */
+        if ((code == "DVD") || (code == "MLT")) {
+            if ((rx != 0 && rx != 2) || (ry != 0 && ry != 2)) {
+                String error = String.format("Invalid register for multiply or divide.");
+                throw (new IOException(error));
+            }
+        }
+
+        short operand1 = (short) gpr[rx].read();
+        short operand2 = (short) gpr[ry].read();
+
+        System.out.printf("[ALU::RegToReg] Operands are: %d, %d;  code is: %s\n", operand1,operand2, code);
+
+        switch (code) {
+            case "DVD" -> {
+                System.out.println("[ALU::RegToReg] Performing division...");
+                /* Check for divide by zero */
+                if (operand2 == 0) {
+                    cc = CC.DIVZERO;
+                    break;
+                }
+                short quotient = (short) (operand1 / operand2);
+                short remainder = (short) (operand1 % operand2);
+                System.out.printf("[ALU::RegToReg] Completed division: quotient = %d, remainder = %d\n",
+                        quotient, remainder);
+                /* Save quotient to rx and remainder to rx + 1 */
+                gpr[rx].load(quotient);
+                gpr[rx+1].load(remainder);
+            }
+            case "TRR" -> {
+                System.out.println("[ALU::RegToReg] Testing for equality...");
+                if (operand1 == operand2) {
+                    System.out.println("[ALU::RegToReg] Operands are equal!");
+                    cc = CC.EQUALORNOT;
+                } else {
+                    System.out.println("[ALU::RegToReg] Operands are NOT equal!");
+                }
+                break;
+             }
+            case "AND" -> {
+                System.out.println("[ALU::RegToReg] Performing AND operation...");
+                short result = (short)(operand1 & operand2);
+                System.out.printf("[ALU::RegToReg] Result of %s & %s is %s\n",
+                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)operand2),
+                        Integer.toBinaryString((int)result));
+                /* Save output to rx */
+                gpr[rx].load(result);
+                break;
+            }
+            case "ORR" -> {
+                System.out.println("[ALU::RegToReg] Performing OR operation...");
+                short result = (short)(operand1 | operand2);
+                System.out.printf("[ALU::RegToReg] Result of %s | %s is %s\n",
+                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)operand2),
+                        Integer.toBinaryString((int)result));
+                /* Save output to rx */
+                gpr[rx].load(result);
+                break;
+            }
+            case "NOT" -> {
+                System.out.println("[ALU::RegToReg] Performing NOT operation...");
+                short result = (short)(~operand1);
+                System.out.printf("[ALU::RegToReg] Result of !%s is %s\n",
+                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)result));
+                /* Save output to rx */
+                gpr[rx].load(result);
+                break;
+            }
+        }
+
+        return cc;
     }
 
     /**

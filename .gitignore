@@ -18,3 +18,4 @@ out/artifacts/CSCI6461/javafx.web.jar
 out/artifacts/CSCI6461_jar/CSCI6461.jar
 src/main/java/module-info.java
 src/main/resources/META-INF/MANIFEST.MF
+.DS_Store

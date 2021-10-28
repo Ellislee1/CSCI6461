@@ -35,11 +35,6 @@ public class ControlUnit {
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
 
     /**
-     * Parameter to hold condition code
-     */
-    CC cc;
-
-    /**
      * Parameter to hold the Program Counter (PC) register
      */
     public Register pc;
@@ -104,6 +99,9 @@ public class ControlUnit {
      */
     private final ALU alu;
 
+    /**
+     * Parameter to hold the Control Code returned by arithmetic operations
+     */
     public CC controlCode;
 
     private final int active_cc;
@@ -122,11 +120,6 @@ public class ControlUnit {
         this.lblInput =lblInput;
         this.lblOutput = lblOutput;
         run = false;
-
-        /*
-         * Initialize condition code to OKAY
-         */
-        cc = CC.OKAY;
         
         /*
          * Create Program Counter (PC) register
@@ -195,6 +188,9 @@ public class ControlUnit {
          */
         Clock systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
 
+        /*
+         * Initialize control code to OKAY
+         */
         this.controlCode = CC.OKAY;
 
         this.active_cc = -1;
@@ -376,9 +372,30 @@ public class ControlUnit {
         this.getData(args[3],args[1],args[2]);
 
         /* Call operate on ALU with Opcode and return condition code */
-        cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+        this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
+    /**
+     * Processes Logical instruction from register to register
+     */
+
+    private void processMathRR(Instruction instruction)
+    {
+        int[]  args;
+
+        /* Get instruction arguments */
+        args = instruction.getArguments();
+
+        /* Call operate on ALU with Opcode and return condition code */
+        try {
+            this.controlCode = this.alu.operate(instruction.getName(), (int) args[0], (short) args[1]);
+        } catch (IOException e) {
+            System.out.println("[ControlUnit::processMathRR] IOException during Math Register-to-Register Operation");
+            e.printStackTrace();
+        }
+
+        System.out.printf("[ControlUnit::processMathRR] Received control code of %s from logic operation.\n",this.controlCode.toString());
+    }
     /**
      * Handles the tests to see if a register is zero
      * @param instruction The decoded instruction
@@ -768,6 +785,31 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing RRC instruction...\n");
                 processRRC(decodedInstruction);
             }
+            case "MLT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing MLT instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "DVD" -> {
+                System.out.println("[ControlUnit::singleStep] Processing DVD instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "TRR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing TRR instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "AND" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AND instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "ORR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing ORR instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "NOT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing NOT instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+
         }
 
         if (increment_pc)
