@@ -76,7 +76,7 @@ public class ALU {
      *
      * @return returns condition code (0-3)
      */
-    public CC operate(String code, int r, short imm) {
+    public CC operate(String code, int r, short imm) throws IOException {
 
         return switch (code) {
             case "AMR" -> MemToReg(r, false);
@@ -120,11 +120,58 @@ public class ALU {
         }
 
         short operand1 = (short) gpr[rx].read();
-        short operand2 = (short) gpr[ry].read();
+        short operand2 = -1;
+        if (code != "NOT") {
+            operand2 = (short) gpr[ry].read();
+        } else {
+            System.out.println("[ALU::RegToReg] Processing unary instruction. RY field ignored.");
+        }
 
         System.out.printf("[ALU::RegToReg] Operands are: %d, %d;  code is: %s\n", operand1,operand2, code);
 
         switch (code) {
+            case "MLT" -> {
+                System.out.println("[ALU::RegToReg] Performing multiplication...");
+
+                /* Perform multiplication and store result in an int (I.e. 64-bit word) */
+                int result = operand1 * operand2;
+                System.out.printf("[ALU::RegToReg] Multiplication result is: %d\n", result);
+
+                /* Check for overflow on integer result */
+                /* NOTE: This should never happen since multiplication of two shorts should always */
+                /*       fit in an int. Therefore, we should only have to use the OVERFLOW control code */
+                /*       when the result has high order bits in rx + 1 since it is more than 16-bots. */
+                if (result < Integer.MIN_VALUE || result > Integer.MAX_VALUE) {
+                    System.out.println("[ALU::RegToReg] Result overflowed integer variable!");
+                    cc = CC.OVERFLOW;
+                }
+
+                /* Extract upper and lowe work if result is more than 16-bits long */
+                String bits = Integer.toBinaryString((result & 0xffffffff));
+                int startNdx = 0;
+                String highBits = "0";
+                if (bits.length() > 16) {
+                    System.out.printf("[ALU::RegToReg] Result is %d bits long. Parsing high bits...", bits.length());
+                    highBits = bits.substring(0, bits.length()-15);
+
+                    /* Set control code to OVERFLOW since we spilled over into high bits */
+                    cc = CC.OVERFLOW;
+
+                    /* Adjust start index for low word to proper value */
+                    startNdx = bits.length()-16;
+                }
+
+                /* Get low bits from result binary string */
+                String lowBits = bits.substring(startNdx, bits.length());
+
+                System.out.printf("[ALU::RegToReg] Have result bits: %s; High bits are %s and Low bits are %s\n",
+                        bits, highBits, lowBits);
+
+                /* Save outputs to appropriate registers */
+                gpr[rx].load(get_bool_array(lowBits));
+                gpr[rx+1].load(get_bool_array(highBits));
+                break;
+            }
             case "DVD" -> {
                 System.out.println("[ALU::RegToReg] Performing division...");
                 /* Check for divide by zero */
@@ -261,5 +308,25 @@ public class ALU {
             }
         }
         return cc;
+    }
+
+    /**
+     * Converts a binary string to a boolean array
+     * @param binaryString The binary string to convert
+     * @return the boolean array.
+     */
+    protected boolean[] get_bool_array(final String binaryString) {
+
+        final char[] binary = binaryString.toCharArray(); // Convert to character array
+        final boolean[] data = new boolean[binary.length]; // Create a new boolean array
+
+        // Loop through array and flip bits where a 1 is present
+        for(int x=0; x<binary.length;x++){
+            if(binary[x] == '1'){
+                data[x] = true;
+            }
+        }
+
+        return data;
     }
 }
