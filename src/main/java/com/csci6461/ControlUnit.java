@@ -363,9 +363,9 @@ public class ControlUnit {
         /* Get data from memory into MBR */
         if(!Objects.equals(instruction.getName(), "AIR") && !Objects.equals(instruction.getName(), "SIR")){
             this.getData(args[3],args[1],args[2]);
-            controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
         } else {
-            controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
         }
     }
 
