@@ -44,6 +44,12 @@ public class DecoderConfig {
         instructions.put(014, new MemOp("JSR"));
         instructions.put(015, new MemOp("RFS"));
         instructions.put(017, new MemOp("JGE"));
+        instructions.put(020, new MathRR("MLT"));
+        instructions.put(021, new MathRR("DVD"));
+        instructions.put(022, new MathRR("TRR"));
+        instructions.put(023, new MathRR("AND"));
+        instructions.put(024, new MathRR("ORR"));
+        instructions.put(025, new MathRR("NOT"));
         instructions.put(061, new IoOp("IN"));
         instructions.put(062, new IoOp("OUT"));
         instructions.put(006,new ImMath("AIR"));
