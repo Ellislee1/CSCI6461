@@ -76,7 +76,7 @@ public class ALU {
      *
      * @return returns condition code (0-3)
      */
-    public CC operate(String code, int r, short imm) {
+    public CC operate(String code, int r, short imm) throws IOException {
 
         return switch (code) {
             case "AMR" -> MemToReg(r, false);
