@@ -420,7 +420,7 @@ public class ComputerController {
             while (reader.hasNextLine()) {
 
                 // Split the line into an array of [Address, Command]
-                String[] data = reader.nextLine().split(" ",2);
+                String[] data = reader.nextLine().split(" ",3);
 
                 // Convert these to boolean arrays for storing
                 short memory = toByteArray(data[0]);
