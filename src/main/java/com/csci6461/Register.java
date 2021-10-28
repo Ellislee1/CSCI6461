@@ -92,12 +92,12 @@ public class Register extends CBitSet {
         /* Zero out bitSet before beginning */
         this.set_zero();
 
-        for (int i = 0; i < bits.length; i++) {
+        for (int bit : bits) {
             /* Check for overflow */
-            if (bits[i] >= this.get_size()) {
+            if (bit >= this.get_size()) {
                 overflow = true;
             } else {
-                this.set(bits[i]);
+                this.set(bit);
             }
         }
 
