@@ -1,10 +1,9 @@
-/**
+/*
  * This file implements a simple Cache for the CSCI 6461 Computer simulation
  */
 package com.csci6461;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -66,7 +65,7 @@ public class Cache extends Memory{
         }
 
         /* Create cache storage array according to configured size */
-        cache = new HashMap<Short, short[]>(this.cacheSize);
+        cache = new HashMap<>(this.cacheSize);
         System.out.printf("[Cache::Cache] Created Cache storage is size: %d\n", c);
 
         /* Calculate byteOffset field size from block size */
@@ -77,7 +76,7 @@ public class Cache extends Memory{
         for (int i = 0; i < byteOffset; i++) {
             offsetMask = (short) (offsetMask + (0x0001 << i));
         }
-        System.out.printf("[Cache::Cache] Offset mask is: %s\n", Integer.toBinaryString((int)offsetMask));
+        System.out.printf("[Cache::Cache] Offset mask is: %s\n", Integer.toBinaryString(offsetMask));
 
         /* Allocate storage for tag list */
         tagList = new Short[this.cacheSize];
@@ -124,7 +123,7 @@ public class Cache extends Memory{
      *
      * @throws IOException If an invalid memory size is specified
      */
-    public Cache(int s, int c, int b, Register mar, Register mbr, short[][] data, Short tags[]) throws IOException {
+    public Cache(int s, int c, int b, Register mar, Register mbr, short[][] data, Short[] tags) throws IOException {
         /* Call superclass constructor to initialize memory */
         super(s, mar, mbr);
 
@@ -142,8 +141,8 @@ public class Cache extends Memory{
             } else {
                 tag = tags[i];
             }
-            cache.put((Short) tag, data[i]);
-            tagList[i] = (short) tag;
+            cache.put(tag, data[i]);
+            tagList[i] = tag;
         }
     }
 
@@ -154,24 +153,24 @@ public class Cache extends Memory{
      */
     private short getTag(short address) {
         System.out.printf("[Cache::getTag] Getting tag for address: %s\n"
-                , Integer.toBinaryString((int)(0xffff & address)));
+                , Integer.toBinaryString(0xffff & address));
 
         /* Shift address by length of byte offset field to get tag */
         short tag = (short) (address >>> byteOffset);
         System.out.printf("[Cache::getTag] Tag after shift by %s: %s\n"
-                , byteOffset, Integer.toBinaryString((int)(0xffff & tag)));
+                , byteOffset, Integer.toBinaryString(0xffff & tag));
 
         return tag;
     }
 
     private short getByteOffset(short address) {
         System.out.printf("[Cache::getByteOffset] Getting by offset for address: %s\n",
-                Integer.toBinaryString((int)address));
+                Integer.toBinaryString(address));
 
         /* Mask off all address with offset mask */
         short offset = (short) (address & offsetMask);
         System.out.format("[Cache::getByteOffset] Byte offset is %s\n",
-                Integer.toBinaryString((int) offset));
+                Integer.toBinaryString(offset));
 
         return offset;
     }
@@ -185,16 +184,16 @@ public class Cache extends Memory{
      */
     private short [] getMemoryBlock(short blockId) {
         System.out.printf("[Cache::getMemoryBlock] Getting memory block with id: %s\n",
-                Integer.toBinaryString((int) blockId));
+                Integer.toBinaryString(blockId));
         /* Shift tag by byteOffset to get calculate starting address of block */
         short startAddress = (short) (blockId << byteOffset);
         System.out.printf("[Cache::getMemoryBlock] Memory Block starting address is: %s\n",
-                Integer.toBinaryString((int) startAddress));
+                Integer.toBinaryString(startAddress));
 
         /* Add max block id - 1 to starting address to get ending address */
         short endAddress = (short) (startAddress + (Math.pow(2, byteOffset)));
         System.out.printf("[Cache::getMemoryBlock] Memory Block ending address is: %s\n",
-                Integer.toBinaryString((int) endAddress));
+                Integer.toBinaryString(endAddress));
 
         return Arrays.copyOfRange(super.data, startAddress, endAddress);
     }
@@ -202,7 +201,7 @@ public class Cache extends Memory{
     /**
      * This method saves a block of memory into the Cache after a miss
      *
-     * @param tag
+     * @param tag the tag to save to (bloack)
      */
     private void saveToCache(short tag) {
         int index;
@@ -228,7 +227,7 @@ public class Cache extends Memory{
         short[] line = getMemoryBlock(tag);
 
         /* Save memory block to cache */
-        cache.put((Short) tag, line);
+        cache.put(tag, line);
 
         /* Save tag to tag list for random replacement as needed */
         tagList[index] = tag;
@@ -259,7 +258,7 @@ public class Cache extends Memory{
             /* Get appropriate word from line according to offset */
             short word = line[offset];
             System.out.printf("[Cache::read] Retrieved word from cache line: %s\n",
-                    Integer.toBinaryString((int) word));
+                    Integer.toBinaryString(word));
 
             /* Copy word to MBR */
             mbr.load(word);
@@ -334,7 +333,7 @@ public class Cache extends Memory{
         for (int i = 0; line != null & i < this.cacheSize; i++) {
             System.out.printf("  %s     %s     %s\n",
                     String.format("0x%05X", (int) tag),
-                    String.format("0x%01X", (int) i),
+                    String.format("0x%01X", i),
                     String.format("0x%06X", line[i]));
         }
         System.out.println("|---------|--------|-------------|");
@@ -358,7 +357,7 @@ public class Cache extends Memory{
 
         /* Save tag to first element in the array */
         if(tag != null) {
-            output[0] = (short) tag;
+            output[0] = tag;
         } else {
             throw new NullPointerException("Tag is null");
         }

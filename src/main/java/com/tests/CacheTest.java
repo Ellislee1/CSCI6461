@@ -44,8 +44,8 @@ public class CacheTest {
         System.out.println("Starting Cache test...");
 
         /* Create a bunch of data to fill the cache */
-        short data[][] = new short[CACHE_SIZE - 1][CACHE_SIZE];
-        Short tags[] = new Short[CACHE_SIZE - 1];
+        short[][] data = new short[CACHE_SIZE - 1][CACHE_SIZE];
+        Short[] tags = new Short[CACHE_SIZE - 1];
         for (int i = 0; i < CACHE_SIZE - 1; i++) {
             /* Start at tag 100 (E.g. memory address 0x64 = 100 tag + 0000 word offset */
             tags[i] = (short)(i + 4);
@@ -97,8 +97,8 @@ public class CacheTest {
         short value = (short) mbr.read();
         if (value != (short) (0xAAAA & 0xffff)) {
             System.out.printf("\n\nERROR: Expected MBR to have %s but got %s\n",
-                    Integer.toBinaryString((int)(0xAAAA & 0xffff)),
-                    Integer.toBinaryString((int)value));
+                    Integer.toBinaryString(0xAAAA & 0xffff),
+                    Integer.toBinaryString(value));
             /* Exit with error status */
             System.exit(1);
         }
@@ -126,8 +126,8 @@ public class CacheTest {
         value = (short) mbr.read();
         if (value != (short) (0xAAAA & 0xffff)) {
             System.out.printf("\n\nERROR: Expected MBR to have %s but got %s\n",
-                    Integer.toBinaryString((int)(0xAAAA & 0xffff)),
-                    Integer.toBinaryString((int)value));
+                    Integer.toBinaryString(0xAAAA & 0xffff),
+                    Integer.toBinaryString(value));
             /* Exit with error status */
             System.exit(1);
         }
@@ -139,13 +139,13 @@ public class CacheTest {
         short[] line = cache.getCacheLine((short)(CACHE_SIZE - 1));
 
         System.out.printf("Retrieved data for line 16 of cache with tag %s:\n",
-                Integer.toBinaryString((int)(line[0] & 0xffff)));
-        System.out.printf("Word 9 in line is %s\n", Integer.toBinaryString((int)(line[9 + 1] & 0xffff)));
+                Integer.toBinaryString(line[0] & 0xffff));
+        System.out.printf("Word 9 in line is %s\n", Integer.toBinaryString(line[9 + 1] & 0xffff));
 
         if ((line[9 + 1]) != (short)(0xAAAA & 0xffff)) {
             System.out.printf("\n\nERROR: Expected word 9 of cache line 16 to have %s but got %s\n",
-                    Integer.toBinaryString((int)(0xAAAA & 0xffff)),
-                    Integer.toBinaryString((int)(line[9 + 1] & 0xffff)));
+                    Integer.toBinaryString(0xAAAA & 0xffff),
+                    Integer.toBinaryString(line[9 + 1] & 0xffff));
             /* Exit with error status */
             System.exit(1);
         }

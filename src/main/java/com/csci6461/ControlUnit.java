@@ -30,14 +30,8 @@ public class ControlUnit {
     private static final int MEMORY_SIZE = 2048;     /* Size of main memory */
     private static final int CACHE_SIZE = 16;        /* Size of cache */
     private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
-    private static final long CLOCK_TIMEOUT = 1000;  /* Clock timeout period */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
-
-    /**
-     * Parameter to hold condition code
-     */
-    CC cc;
 
     /**
      * Parameter to hold the Program Counter (PC) register
@@ -72,13 +66,15 @@ public class ControlUnit {
     protected int inReg;
 
     @FXML
-    private Button btnInput;
+    private final Button btnInput;
 
     @FXML
-    private Label lblInput,lblOutput;
+    private final Label lblInput;
+    @FXML
+    private final Label lblOutput;
 
     @FXML
-    private TextField txtInput;
+    private final TextField txtInput;
 
 
 //    /**
@@ -104,6 +100,9 @@ public class ControlUnit {
      */
     private final ALU alu;
 
+    /**
+     * Parameter to hold the Control Code returned by arithmetic operations
+     */
     public CC controlCode;
 
     private final int active_cc;
@@ -122,11 +121,6 @@ public class ControlUnit {
         this.lblInput =lblInput;
         this.lblOutput = lblOutput;
         run = false;
-
-        /*
-         * Initialize condition code to OKAY
-         */
-        cc = CC.OKAY;
         
         /*
          * Create Program Counter (PC) register
@@ -186,14 +180,6 @@ public class ControlUnit {
          * Create ALU
          */
         this.alu = new ALU(this.gpr, this.mbr);
-
-        /*
-         * Create system clock and initialize to configured timeout
-         */
-        /*
-         * Parameter to hold system clock
-         */
-        Clock systemClock = new Clock(ControlUnit.CLOCK_TIMEOUT);
 
         this.controlCode = CC.OKAY;
 
@@ -373,12 +359,38 @@ public class ControlUnit {
         args = instruction.getArguments();
 
         /* Get data from memory into MBR */
-        this.getData(args[3],args[1],args[2]);
+        if(!Objects.equals(instruction.getName(), "AIR") && !Objects.equals(instruction.getName(), "SIR")){
+            this.getData(args[3],args[1],args[2]);
+            cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+        } else {
+            cc = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
+        }
 
         /* Call operate on ALU with Opcode and return condition code */
-        cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+        this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
+    /**
+     * Processes Logical instruction from register to register
+     */
+
+    private void processMathRR(Instruction instruction)
+    {
+        int[]  args;
+
+        /* Get instruction arguments */
+        args = instruction.getArguments();
+
+        /* Call operate on ALU with Opcode and return condition code */
+        try {
+            this.controlCode = this.alu.operate(instruction.getName(), (int) args[0], (short) args[1]);
+        } catch (IOException e) {
+            System.out.println("[ControlUnit::processMathRR] IOException during Math Register-to-Register Operation");
+            e.printStackTrace();
+        }
+
+        System.out.printf("[ControlUnit::processMathRR] Received control code of %s from logic operation.\n",this.controlCode.toString());
+    }
     /**
      * Handles the tests to see if a register is zero
      * @param instruction The decoded instruction
@@ -760,6 +772,13 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing OUT instruction...\n");
                 processOUT(decodedInstruction);
             }
+            case "AIR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AIR instruction...\n");
+                this.processMathMR(decodedInstruction);
+            }
+            case "SIR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing SIR instruction...\n");
+                this.processMathMR(decodedInstruction);
             case "SRC" -> {
                 System.out.println("[ControlUnit::singleStep] Processing SRC instruction...\n");
                 processSRC(decodedInstruction);
@@ -768,6 +787,31 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing RRC instruction...\n");
                 processRRC(decodedInstruction);
             }
+            case "MLT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing MLT instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "DVD" -> {
+                System.out.println("[ControlUnit::singleStep] Processing DVD instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "TRR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing TRR instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "AND" -> {
+                System.out.println("[ControlUnit::singleStep] Processing AND instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "ORR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing ORR instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+            case "NOT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing NOT instruction...\n");
+                this.processMathRR(decodedInstruction);
+            }
+
         }
 
         if (increment_pc)
@@ -849,13 +893,6 @@ public class ControlUnit {
     public void printMem(){
         this.mainMemory.printMemory();
     }
-
-    /**
-     * Prints a line in the cache
-     *
-     * @param n Integer number of line to print
-     */
-    public void printCacheLine(Short n) { mainMemory.printCacheLine(n); }
 
     /**
      * Get the 16-bit binary string
