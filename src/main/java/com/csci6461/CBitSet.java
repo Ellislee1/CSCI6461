@@ -137,7 +137,7 @@ class CBitSet {
      * Gets the value as an integer
      * @return the value as an integer
      */
-    public int read() {
+    public short read() {
         StringBuilder s = new StringBuilder();
 
         for(boolean val: this.bit_set){
@@ -148,7 +148,7 @@ class CBitSet {
             }
         }
 
-        return Integer.parseInt(s.toString(),2);
+        return (short)Integer.parseInt(s.toString(),2);
     }
 
     /**
