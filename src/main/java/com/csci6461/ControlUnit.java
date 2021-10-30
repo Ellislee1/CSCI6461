@@ -571,14 +571,21 @@ public class ControlUnit {
     private void processSRC(Instruction instruction){
         final int[] args = instruction.getArguments();
 
+        System.out.println("[ControlUnit::processSRC] Processing Shift register...");
+        System.out.printf("[ControlUnit::processSRC] Arguments are: r = %d, A/L = %d, L/R = %d, Count = %d\n",
+                args[0], args[1], args[2], args[3]);
+
         if(args[3] == 0){
+            System.out.println("[ControlUnit::processSRC] Count is zero; Exiting without shift.\n");
             return;
         }
 
         int val = gpr[args[0]].read();
+        System.out.printf("[ControlUnit::processSRC] Value of register before shift: %s\n",
+                Integer.toBinaryString((int)(val & 0xffffffff)));
 
         // If a Right Shift
-        if(args[2] == 1){
+        if(args[2] == 0){
             // If a arithmetic shift
             if(args[1] == 1){
                 boolean msb = get_bool_array(getBinaryString((short)val))[0];
@@ -596,7 +603,8 @@ public class ControlUnit {
         } else {
             val = val << args[3];
         }
-
+        System.out.printf("[ControlUnit::processSRC] Value after shift: %s\n",
+                Integer.toBinaryString((int)(val & 0xffffffff)));
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
@@ -613,7 +621,7 @@ public class ControlUnit {
         boolean over_bit;
 
         // If Right rotate.
-        if(args[2] == 1){
+        if(args[2] == 0){
             // If a arithmetic rotate
             if(args[1] == 1) {
                 boolean preserved_bit = msb[0];
@@ -662,7 +670,7 @@ public class ControlUnit {
     public boolean singleStep() throws IOException {
         /* Get next instruction address from PC and convert to int */
         final int iPC = this.pc.read();
-        System.out.printf("[ControlUnit::singleStep] Next instruction address is %d\n", iPC);
+        System.out.printf("\n[ControlUnit::singleStep] Next instruction address is 0x%04X\n\n", iPC);
 
         /* Get instruction at address indicated by PC */
         final short instruction = this.loadDataFromMemory(iPC);
@@ -875,8 +883,8 @@ public class ControlUnit {
                     System.out.println("[ControlUnit::CalculateEA] Direct address with indexing.");
 
                     /* Place address in MAR and call method to get indirect address into MBR */
-
                     ea = (short) (this.loadDataFromMemory(address) + this.ixr[ix].read());
+
                 } else {
                     final String error = String.format("Error: Index register out of bounds: %d\n", ix);
                     throw new IOException(error);
