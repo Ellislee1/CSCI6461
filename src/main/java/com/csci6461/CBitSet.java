@@ -52,6 +52,7 @@ class CBitSet {
      * @throws IndexOutOfBoundsException Throws an error if the bit set is larger than what is allowed.
      */
     public void set_bits(boolean[] new_bit_set) throws IndexOutOfBoundsException{
+//        System.out.printf("[CBitSet::set_bits] Setting bits to: %s\n", Arrays.toString(new_bit_set));
 
         if (new_bit_set.length> no_bytes *4){
 

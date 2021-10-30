@@ -280,7 +280,12 @@ public class ALU {
     protected CC ImmToReg(int r, boolean subtraction, short imm){
         CC cc = CC.OKAY;
 
+        System.out.println("[ALU::ImmToReg] Performing immediate to register math operation.");
+        System.out.printf("[ALU::ImmToReg] Arguments are: r = %d, immed = %d, subtract = %b\n",
+                r, imm, subtraction);
+
         short operand2 = (short) gpr[r].read();
+        System.out.printf("[ALU::ImmToReg] Retrieved operand from register: %d", operand2);
 
         if(operand2 == 0){
             try {

@@ -69,6 +69,10 @@ public class Register extends CBitSet {
      * @throws IOException Throws a IO exception if item can not be loaded
      */
     public void load(short data) throws IOException {
+        System.out.printf("[Register::load] Input short int for register %s: %d\n",
+                name, data);
+        System.out.printf("[Register::load] String representation of short is: %s\n",
+                Integer.toBinaryString(0xffff & data));
         load(get_bool_array(Integer.toBinaryString(0xffff & data)));
     }
 
@@ -121,7 +125,7 @@ public class Register extends CBitSet {
 
         /* Get string representation of bit set */
         String bits = String.format("%16s", Integer.toBinaryString(this.read())).replace(' ', '0');
-        System.out.printf("[Register::getSetBits] Have string representation from parent: %s\n", bits);
+//        System.out.printf("[Register::getSetBits] Have string representation from parent: %s\n", bits);
 
         return this.get_set_bits();
     }

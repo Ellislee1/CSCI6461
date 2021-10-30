@@ -627,7 +627,7 @@ public class ComputerController {
     private void updateCache(){
         // Reset the items
         lstCache.getItems().clear();
-        lstCache.getItems().add("Tag\t\tOffset\tValue");
+        lstCache.getItems().add("Tag\t\tBlock\tValue");
 
         for(int i=0; i<cu.mainMemory.getCacheSize();i++){
             try {
