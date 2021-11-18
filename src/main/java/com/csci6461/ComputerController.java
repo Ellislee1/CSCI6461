@@ -156,7 +156,7 @@ public class ComputerController {
      */
     private CheckBox[][] gpr,ixr;
 
-    private final String intReg = "(^[0-9]*$)|(^[a-zA-Z]{1})";
+    private final String intReg = "(^[0-9]*$)|(^[a-zA-Z]{1})|(&)";
 
     private int inputInt;
 
@@ -218,16 +218,26 @@ public class ComputerController {
                 return;
             }
 
-            if(!newValue.matches(intReg)) {
+            String newText;
+
+           if(!newValue.matches(intReg)) {
                 /* Invalid input received. Keep old value. */
                 System.out.println("Input does not match Regex; Leaving old value");
-                txtInput.textProperty().set(oldValue);
+//                txtInput.textProperty().set(oldValue);
+                newText = oldValue;
             } else {
-                String newText;
                 if (!Character.isDigit(newValue.charAt(0))) {
                     /* Process new character input */
                     System.out.printf("Input is not digit. Saving character: %c\n", newValue.charAt(0));
-                    inputInt = (int) newValue.charAt(0);
+
+                    /* If character is &, encode EOT instead so program knows input is over */
+                    if (newValue.charAt(0) == '&') {
+                        System.out.println("Input is &; Encoding EOF");
+                        inputInt = 4;
+                    } else {
+                        System.out.println("Input is regular character; Encoding ASCII");
+                        inputInt = (int) newValue.charAt(0);
+                    }
                     newText = newValue;
                 } else {
                     /* Process new numerical input */
@@ -237,14 +247,16 @@ public class ComputerController {
                         txtInput.textProperty().set("32767");
                         inputInt = 32767;
                     } else {
-                        /* Parse input into integer */
+                        System.out.println("Input is valid number; Parsing Int");
                         inputInt = Integer.parseInt(newValue, 10);
                     }
                     newText = String.valueOf(inputInt);
                 }
-                /* Update text input value */
-                txtInput.textProperty().set(newText);
+                System.out.printf("Input int after processing new text is: %d\n", inputInt);
+
             }
+            /* Update text input value */
+            txtInput.textProperty().set(newText);
         });
 
         updateCache();
