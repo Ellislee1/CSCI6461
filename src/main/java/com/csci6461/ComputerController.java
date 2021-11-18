@@ -156,7 +156,7 @@ public class ComputerController {
      */
     private CheckBox[][] gpr,ixr;
 
-    private final String intReg =  "^[0-9]*$";
+    private final String intReg = "(^[0-9]*$)|(^[a-zA-Z]{1})";
 
     private int inputInt;
 
@@ -210,20 +210,40 @@ public class ComputerController {
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
 
         txtInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.printf("Text input listener receive new value: %s\n", newValue);
             if(Objects.equals(newValue, "")){
+                System.out.println("Input is blank; Setting text input to 0.");
                 txtInput.textProperty().set("0");
                 inputInt = 0;
                 return;
             }
 
-            if(!newValue.matches(intReg)){
+            if(!newValue.matches(intReg)) {
+                /* Invalid input received. Keep old value. */
+                System.out.println("Input does not match Regex; Leaving old value");
                 txtInput.textProperty().set(oldValue);
-            } else if (Integer.parseInt(newValue,10) > 32767){
-                txtInput.textProperty().set("32767");
-                inputInt = 32767;
             } else {
-                inputInt = Integer.parseInt(newValue,10);
-                txtInput.textProperty().set(String.valueOf(inputInt));
+                String newText;
+                if (!Character.isDigit(newValue.charAt(0))) {
+                    /* Process new character input */
+                    System.out.printf("Input is not digit. Saving character: %c\n", newValue.charAt(0));
+                    inputInt = (int) newValue.charAt(0);
+                    newText = newValue;
+                } else {
+                    /* Process new numerical input */
+                    System.out.printf("Input is number: %d\n", Integer.parseInt(newValue, 10));
+                    if (Integer.parseInt(newValue, 10) > 32767) {
+                        /* Value is too big! Set to max value. */
+                        txtInput.textProperty().set("32767");
+                        inputInt = 32767;
+                    } else {
+                        /* Parse input into integer */
+                        inputInt = Integer.parseInt(newValue, 10);
+                    }
+                    newText = String.valueOf(inputInt);
+                }
+                /* Update text input value */
+                txtInput.textProperty().set(newText);
             }
         });
 
@@ -343,6 +363,8 @@ public class ComputerController {
     @FXML
     private void onInput() throws InterruptedException {
         boolean[] boolIn = cu.get_bool_array(Integer.toBinaryString(inputInt&0xFFFF));
+
+        System.out.printf("\nRead input value from keyboard: %d\n\n", inputInt);
 
         cu.gpr[cu.inReg].set_bits(boolIn);
         updateUI();
