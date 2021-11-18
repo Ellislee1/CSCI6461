@@ -8,7 +8,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -112,6 +114,11 @@ public class ControlUnit {
     protected  boolean run;
 
     /**
+     * Parameter to hold Card Buffer
+     */
+    BufferedReader cardBuffer;
+
+    /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
@@ -186,6 +193,19 @@ public class ControlUnit {
         this.controlCode = CC.OKAY;
 
         this.active_cc = -1;
+
+        /*
+         * Load card file if one exists
+         */
+        File cardFile = new File("CardFile.txt");
+        try {
+            FileReader reader = new FileReader(cardFile);
+            cardBuffer = new BufferedReader(reader);
+        } catch (FileNotFoundException e) {
+            System.out.println("[ControlUnit::ControlUnit] Card file not found in path "
+                    + System.getProperty("user.dir"));
+            cardBuffer = null;
+        }
     }
 
     /**
@@ -542,15 +562,52 @@ public class ControlUnit {
      * @param instruction The decoded instruction
      * @return Returns a halt for the program
      */
-    private boolean processIN(Instruction instruction){
+    private boolean processIN(Instruction instruction) throws IOException {
         final int[] args;
+        boolean proceed = true;
         args = instruction.getArguments();
         inReg = args[0];
 
-        txtInput.disableProperty().set(false);
-        lblInput.setVisible(true);
-        btnInput.disableProperty().set(false);
-        return false;
+        /* Check device id */
+        /* NOTE: We only handle keyboard or card reader input */
+        if (args[1] == 0) {
+            /* Device is keyboard; Enable text input field */
+            System.out.println("[ControlUnit::processIN] Processing keyboard input.");
+            txtInput.disableProperty().set(false);
+            lblInput.setVisible(true);
+            btnInput.disableProperty().set(false);
+
+            /* Halt to wait for user input */
+            proceed = false;
+        } else if (args[1] == 2) {
+            /* Device is card reader */
+            System.out.println("[ControlUnit::processIN] Processing card reader input.");
+
+            if (cardBuffer == null) {
+                String error = String.format("Received card reader input instruction but no card file is loaded!");
+                throw new IOException(error);
+            }
+
+            /* Try to get character from card buffer */
+            int c = cardBuffer.read();
+            System.out.printf("[ControlUnit::processIN] Read character from card buffer: %c\n", (char)c);
+
+            /* Check for end of file */
+            if (c == -1) {
+                System.out.println("[ControlUnit::processIN] Found end of card file");
+
+                /* Save an ASCII End Of Transmission (EOT) code */
+                c = 4;
+
+                /* Reset cardBuffer */
+                cardBuffer = null;
+            }
+            /* Save character to register */
+            gpr[args[0]].load((short) c);
+
+        }
+
+        return proceed;
     }
 
     /**
