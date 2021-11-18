@@ -7,6 +7,8 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -119,7 +121,7 @@ public class ComputerController {
      * Holds the list view for the cache
      */
     @FXML
-    private ListView<String> lstCache, lstMemory;
+    private ListView<String> lstCache, lstMemory, lstOutput;
 
     /**
      * Label to output the hex code
@@ -154,9 +156,11 @@ public class ComputerController {
      */
     private CheckBox[][] gpr,ixr;
 
-    private final String intReg =  "^[0-9]*$";
+    private final String intReg = "(^[0-9]*$)|(^[a-zA-Z]{1})";
 
     private int inputInt;
+
+    private ArrayList<Integer> outList;
 
     /**
      * Initializer for the program.
@@ -166,8 +170,10 @@ public class ComputerController {
     private void initialize() {
         inputInt = 0;
         txtInput.textProperty().set("0");
+        outList = new ArrayList<Integer>();
 
-        cu = new ControlUnit(txtInput,btnSubmit,lblInput,lblOutput);
+
+        cu = new ControlUnit(txtInput,btnSubmit,lblInput,outList);
 
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
@@ -204,20 +210,40 @@ public class ComputerController {
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
 
         txtInput.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.printf("Text input listener receive new value: %s\n", newValue);
             if(Objects.equals(newValue, "")){
+                System.out.println("Input is blank; Setting text input to 0.");
                 txtInput.textProperty().set("0");
                 inputInt = 0;
                 return;
             }
 
-            if(!newValue.matches(intReg)){
+            if(!newValue.matches(intReg)) {
+                /* Invalid input received. Keep old value. */
+                System.out.println("Input does not match Regex; Leaving old value");
                 txtInput.textProperty().set(oldValue);
-            } else if (Integer.parseInt(newValue,10) > 32767){
-                txtInput.textProperty().set("32767");
-                inputInt = 32767;
             } else {
-                inputInt = Integer.parseInt(newValue,10);
-                txtInput.textProperty().set(String.valueOf(inputInt));
+                String newText;
+                if (!Character.isDigit(newValue.charAt(0))) {
+                    /* Process new character input */
+                    System.out.printf("Input is not digit. Saving character: %c\n", newValue.charAt(0));
+                    inputInt = (int) newValue.charAt(0);
+                    newText = newValue;
+                } else {
+                    /* Process new numerical input */
+                    System.out.printf("Input is number: %d\n", Integer.parseInt(newValue, 10));
+                    if (Integer.parseInt(newValue, 10) > 32767) {
+                        /* Value is too big! Set to max value. */
+                        txtInput.textProperty().set("32767");
+                        inputInt = 32767;
+                    } else {
+                        /* Parse input into integer */
+                        inputInt = Integer.parseInt(newValue, 10);
+                    }
+                    newText = String.valueOf(inputInt);
+                }
+                /* Update text input value */
+                txtInput.textProperty().set(newText);
             }
         });
 
@@ -337,6 +363,8 @@ public class ComputerController {
     @FXML
     private void onInput() throws InterruptedException {
         boolean[] boolIn = cu.get_bool_array(Integer.toBinaryString(inputInt&0xFFFF));
+
+        System.out.printf("\nRead input value from keyboard: %d\n\n", inputInt);
 
         cu.gpr[cu.inReg].set_bits(boolIn);
         updateUI();
@@ -531,6 +559,7 @@ public class ComputerController {
         // setUIElem(cu.mfr,mfrController);
         updateCache();
         updateMemory();
+        updateOutput();
     }
 
     /**
@@ -659,6 +688,21 @@ public class ComputerController {
                 String text = String.format("%s\t\t%s",getHex(i),getHex(val));
                 lstMemory.getItems().add(text);
             }
+        }
+
+    }
+
+    /**
+     * Output view is now updated
+     */
+    private void updateOutput(){
+        // Reset the items
+        lstOutput.getItems().clear();
+        lstOutput.refresh();
+        outList = cu.lstOutput;
+
+        for(int x : outList){
+            lstOutput.getItems().add("> "+String.valueOf(x));
         }
 
     }

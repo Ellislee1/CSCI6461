@@ -8,7 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -70,8 +73,9 @@ public class ControlUnit {
 
     @FXML
     private final Label lblInput;
-    @FXML
-    private final Label lblOutput;
+
+
+    protected ArrayList<Integer> lstOutput;
 
     @FXML
     private final TextField txtInput;
@@ -110,16 +114,21 @@ public class ControlUnit {
     protected  boolean run;
 
     /**
+     * Parameter to hold Card Buffer
+     */
+    BufferedReader cardBuffer;
+
+    /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
      */
-    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, Label lblOutput) {
+    public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, ArrayList<Integer> output) {
         System.out.println("Initializing control unit...");
 
         this.txtInput = txtInput;
         this.btnInput = btnInput;
         this.lblInput =lblInput;
-        this.lblOutput = lblOutput;
+        this.lstOutput = output;
         run = false;
         
         /*
@@ -184,6 +193,19 @@ public class ControlUnit {
         this.controlCode = CC.OKAY;
 
         this.active_cc = -1;
+
+        /*
+         * Load card file if one exists
+         */
+        File cardFile = new File("CardFile.txt");
+        try {
+            FileReader reader = new FileReader(cardFile);
+            cardBuffer = new BufferedReader(reader);
+        } catch (FileNotFoundException e) {
+            System.out.println("[ControlUnit::ControlUnit] Card file not found in path "
+                    + System.getProperty("user.dir"));
+            cardBuffer = null;
+        }
     }
 
     /**
@@ -361,13 +383,10 @@ public class ControlUnit {
         /* Get data from memory into MBR */
         if(!Objects.equals(instruction.getName(), "AIR") && !Objects.equals(instruction.getName(), "SIR")){
             this.getData(args[3],args[1],args[2]);
-            cc = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
         } else {
-            cc = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
         }
-
-        /* Call operate on ALU with Opcode and return condition code */
-        this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[3]);
     }
 
     /**
@@ -543,15 +562,52 @@ public class ControlUnit {
      * @param instruction The decoded instruction
      * @return Returns a halt for the program
      */
-    private boolean processIN(Instruction instruction){
+    private boolean processIN(Instruction instruction) throws IOException {
         final int[] args;
+        boolean proceed = true;
         args = instruction.getArguments();
         inReg = args[0];
 
-        txtInput.disableProperty().set(false);
-        lblInput.setVisible(true);
-        btnInput.disableProperty().set(false);
-        return false;
+        /* Check device id */
+        /* NOTE: We only handle keyboard or card reader input */
+        if (args[1] == 0) {
+            /* Device is keyboard; Enable text input field */
+            System.out.println("[ControlUnit::processIN] Processing keyboard input.");
+            txtInput.disableProperty().set(false);
+            lblInput.setVisible(true);
+            btnInput.disableProperty().set(false);
+
+            /* Halt to wait for user input */
+            proceed = false;
+        } else if (args[1] == 2) {
+            /* Device is card reader */
+            System.out.println("[ControlUnit::processIN] Processing card reader input.");
+
+            if (cardBuffer == null) {
+                String error = String.format("Received card reader input instruction but no card file is loaded!");
+                throw new IOException(error);
+            }
+
+            /* Try to get character from card buffer */
+            int c = cardBuffer.read();
+            System.out.printf("[ControlUnit::processIN] Read character from card buffer: %c\n", (char)c);
+
+            /* Check for end of file */
+            if (c == -1) {
+                System.out.println("[ControlUnit::processIN] Found end of card file");
+
+                /* Save an ASCII End Of Transmission (EOT) code */
+                c = 4;
+
+                /* Reset cardBuffer */
+                cardBuffer = null;
+            }
+            /* Save character to register */
+            gpr[args[0]].load((short) c);
+
+        }
+
+        return proceed;
     }
 
     /**
@@ -562,7 +618,7 @@ public class ControlUnit {
         final int[] args = instruction.getArguments();
 
         int val = gpr[args[0]].read();
-        lblOutput.setText(String.valueOf(val));
+        lstOutput.add(val);
     }
 
     /**
@@ -572,14 +628,21 @@ public class ControlUnit {
     private void processSRC(Instruction instruction){
         final int[] args = instruction.getArguments();
 
+        System.out.println("[ControlUnit::processSRC] Processing Shift register...");
+        System.out.printf("[ControlUnit::processSRC] Arguments are: r = %d, A/L = %d, L/R = %d, Count = %d\n",
+                args[0], args[1], args[2], args[3]);
+
         if(args[3] == 0){
+            System.out.println("[ControlUnit::processSRC] Count is zero; Exiting without shift.\n");
             return;
         }
 
         int val = gpr[args[0]].read();
+        System.out.printf("[ControlUnit::processSRC] Value of register before shift: %s\n",
+                Integer.toBinaryString((int)(val & 0xffffffff)));
 
         // If a Right Shift
-        if(args[2] == 1){
+        if(args[2] == 0){
             // If a arithmetic shift
             if(args[1] == 1){
                 boolean msb = get_bool_array(getBinaryString((short)val))[0];
@@ -597,7 +660,8 @@ public class ControlUnit {
         } else {
             val = val << args[3];
         }
-
+        System.out.printf("[ControlUnit::processSRC] Value after shift: %s\n",
+                Integer.toBinaryString((int)(val & 0xffffffff)));
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
@@ -614,7 +678,7 @@ public class ControlUnit {
         boolean over_bit;
 
         // If Right rotate.
-        if(args[2] == 1){
+        if(args[2] == 0){
             // If a arithmetic rotate
             if(args[1] == 1) {
                 boolean preserved_bit = msb[0];
@@ -663,7 +727,7 @@ public class ControlUnit {
     public boolean singleStep() throws IOException {
         /* Get next instruction address from PC and convert to int */
         final int iPC = this.pc.read();
-        System.out.printf("[ControlUnit::singleStep] Next instruction address is %d\n", iPC);
+        System.out.printf("\n[ControlUnit::singleStep] Next instruction address is 0x%04X\n\n", iPC);
 
         /* Get instruction at address indicated by PC */
         final short instruction = this.loadDataFromMemory(iPC);
@@ -779,6 +843,7 @@ public class ControlUnit {
             case "SIR" -> {
                 System.out.println("[ControlUnit::singleStep] Processing SIR instruction...\n");
                 this.processMathMR(decodedInstruction);
+            }
             case "SRC" -> {
                 System.out.println("[ControlUnit::singleStep] Processing SRC instruction...\n");
                 processSRC(decodedInstruction);
@@ -875,8 +940,8 @@ public class ControlUnit {
                     System.out.println("[ControlUnit::CalculateEA] Direct address with indexing.");
 
                     /* Place address in MAR and call method to get indirect address into MBR */
-
                     ea = (short) (this.loadDataFromMemory(address) + this.ixr[ix].read());
+
                 } else {
                     final String error = String.format("Error: Index register out of bounds: %d\n", ix);
                     throw new IOException(error);

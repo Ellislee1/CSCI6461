@@ -502,7 +502,7 @@
             <Font name="System Bold" size="14.0" />
          </font>
       </Label>
-      <Label fx:id="lblInput1" layoutX="467.0" layoutY="386.0" text="Output">
+      <Label fx:id="lblInput1" layoutX="457.0" layoutY="386.0" text="Output">
          <font>
             <Font name="System Bold" size="14.0" />
          </font>
@@ -512,5 +512,6 @@
             <Font size="14.0" />
          </font>
       </Label>
+      <ListView fx:id="lstOutput" layoutX="513.0" layoutY="389.0" prefHeight="207.0" prefWidth="228.0" />
    </children>
 </Pane>
