@@ -108,6 +108,22 @@ public class ComputerController {
     private CheckBox ixr2_1, ixr2_2, ixr2_3, ixr2_4, ixr2_5,ixr2_6,ixr2_7,ixr2_8,ixr2_9,ixr2_10,ixr2_11,ixr2_12,
             ixr2_13,ixr2_14,ixr2_15,ixr2_16;
 
+
+    @FXML
+    private CheckBox fr0_1, fr0_2, fr0_3, fr0_4, fr0_5,fr0_6,fr0_7,fr0_8,fr0_9,fr0_10,fr0_11,fr0_12,
+            fr0_13,fr0_14,fr0_15,fr0_16;
+    @FXML
+    private CheckBox fr1_1, fr1_2, fr1_3, fr1_4, fr1_5,fr1_6,fr1_7,fr1_8,fr1_9,fr1_10,fr1_11,fr1_12,
+            fr1_13,fr1_14,fr1_15,fr1_16;
+
+    @FXML
+    private CheckBox fr2_1, fr2_2, fr2_3, fr2_4, fr2_5,fr2_6,fr2_7,fr2_8,fr2_9,fr2_10,fr2_11,fr2_12,
+            fr2_13,fr2_14,fr2_15,fr2_16;
+
+    @FXML
+    private CheckBox fr3_1, fr3_2, fr3_3, fr3_4, fr3_5,fr3_6,fr3_7,fr3_8,fr3_9,fr3_10,fr3_11,fr3_12,
+            fr3_13,fr3_14,fr3_15,fr3_16;
+
 //    @FXML
 //    private CheckBox mfr_1,mfr_2,mfr_4,mfr_8;
 
@@ -147,14 +163,15 @@ public class ComputerController {
      * Controllers for registers
      */
     private CheckBox[] pcController,marController,mbrController,gpr0Controller,gpr1Controller,gpr2Controller,
-            gpr3Controller,ixr0Controller,ixr1Controller,ixr2Controller,irController;
+            gpr3Controller,ixr0Controller,ixr1Controller,ixr2Controller,irController, fr0Controller, fr1Controller,
+            fr2Controller, fr3Controller;
 
     // private CheckBox[] mfrController;
 
     /**
      * Array of controllers
      */
-    private CheckBox[][] gpr,ixr;
+    private CheckBox[][] gpr,ixr,fr;
 
     private final String intReg = "(^[0-9]*$)|(^[a-zA-Z]{1})|(&)";
 
@@ -204,10 +221,22 @@ public class ComputerController {
 
         irController = new CheckBox[]{ir_1, ir_2, ir_3, ir_4, ir_5, ir_6, ir_7, ir_8, ir_9, ir_10, ir_11, ir_12, ir_13, ir_14,
                 ir_15, ir_16};
+
+        fr0Controller = new CheckBox[] {fr0_1, fr0_2, fr0_3, fr0_4, fr0_5,fr0_6,fr0_7,fr0_8,fr0_9,fr0_10,fr0_11,fr0_12,
+                fr0_13,fr0_14,fr0_15,fr0_16};
+
+        fr1Controller = new CheckBox[] {fr1_1, fr1_2, fr1_3, fr1_4, fr1_5,fr1_6,fr1_7,fr1_8,fr1_9,fr1_10,fr1_11,fr1_12,
+                fr1_13,fr1_14,fr1_15,fr1_16};
+        fr2Controller = new CheckBox[] {fr2_1, fr2_2, fr2_3, fr2_4, fr2_5,fr2_6,fr2_7,fr2_8,fr2_9,fr2_10,fr2_11,fr2_12,
+                fr2_13,fr2_14,fr2_15,fr2_16};
+        fr3Controller = new CheckBox[] {fr3_1, fr3_2, fr3_3, fr3_4, fr3_5,fr3_6,fr3_7,fr3_8,fr3_9,fr3_10,fr3_11,fr3_12,
+                fr3_13,fr3_14,fr3_15,fr3_16};
+
         // mfrController = new CheckBox[]{mfr_1,mfr_2,mfr_4,mfr_8};
 
         gpr = new CheckBox[][]{gpr0Controller, gpr1Controller, gpr2Controller, gpr3Controller};
         ixr = new CheckBox[][]{ixr0Controller, ixr1Controller, ixr2Controller};
+        fr =  new CheckBox[][]{fr0Controller,fr1Controller,fr2Controller,fr3Controller};
 
         txtInput.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.printf("Text input listener receive new value: %s\n", newValue);
@@ -298,6 +327,23 @@ public class ComputerController {
     @FXML
     protected void onGPR0LoadClick() throws IOException{
         cu.gpr[0].load(translateBits(gpr0Controller));
+    }
+
+    @FXML
+    protected void onFr0Load() throws IOException{
+        cu.fr[0].load(translateBits(fr0Controller));
+    }
+    @FXML
+    protected void onFr1Load() throws IOException{
+        cu.fr[1].load(translateBits(fr1Controller));
+    }
+    @FXML
+    protected void onFr2Load() throws IOException{
+        cu.fr[2].load(translateBits(fr2Controller));
+    }
+    @FXML
+    protected void onFr3Load() throws IOException{
+        cu.fr[3].load(translateBits(fr3Controller));
     }
 
     /**
@@ -561,6 +607,8 @@ public class ComputerController {
     private void updateUI() {
         setUIElems(cu.gpr, gpr);
         setUIElems(cu.ixr, ixr);
+
+        setUIElems(cu.fr, fr);
 
         setUIElem(cu.pc, pcController);
         setUIElem(cu.mar, marController);

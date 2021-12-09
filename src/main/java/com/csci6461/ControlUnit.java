@@ -35,6 +35,7 @@ public class ControlUnit {
     private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
+    private static final int NUMBER_OF_FR = 4;      /* Number of Floating point registers */
 
     /**
      * Parameter to hold the Program Counter (PC) register
@@ -50,6 +51,11 @@ public class ControlUnit {
      * Parameter to hold the IX Registers (IXR)
      */
     public Register[] ixr;
+
+    /**
+     * Parameter to hold the FRRegisters (FR)
+     */
+    public Register[] fr;
 
     /**
      * Parameter to hold the Memory Address Register (MAR)
@@ -153,6 +159,12 @@ public class ControlUnit {
         for (int i = 0; i < ControlUnit.NUMBER_OF_IXR; i++) {
             final String name = String.format("IXR%d", i);
             this.ixr[i] = new Register(name, 16);
+        }
+
+        this.fr = new Register[ControlUnit.NUMBER_OF_FR];
+        for (int i = 0; i < ControlUnit.NUMBER_OF_FR; i++) {
+            final String name = String.format("FR%d", i);
+            this.fr[i] = new Register(name, 16);
         }
 
         /*
