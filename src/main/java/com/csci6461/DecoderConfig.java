@@ -56,7 +56,7 @@ public class DecoderConfig {
         instructions.put(007,new ImMath("SIR"));
         instructions.put(031, new BitWiseOperator("SRC"));
         instructions.put(032, new BitWiseOperator("RRC"));
-        instructions.put(032, new BitWiseOperator("RRC"));
+        instructions.put(033, new BitWiseOperator("FADD"));
     }
 
     /**

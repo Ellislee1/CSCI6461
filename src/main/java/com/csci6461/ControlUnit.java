@@ -200,7 +200,7 @@ public class ControlUnit {
         /*
          * Create ALU
          */
-        this.alu = new ALU(this.gpr, this.mbr);
+        this.alu = new ALU(this.gpr, this.mbr, this.fr);
 
         this.controlCode = CC.OKAY;
 
@@ -730,6 +730,16 @@ public class ControlUnit {
         gpr[args[0]].set_bits(msb);
     }
 
+    private void processMathFP(Instruction decodedInstruction) throws IOException {
+        int[] args = decodedInstruction.getArguments();
+        int frReg = args[0];
+
+        getData(args[3],args[1],args[2]);
+        short memFP = this.mbr.read();
+
+        alu.operate(decodedInstruction.getName(), frReg, memFP);
+    }
+
     /**
      * Method to execute single step by getting the next instruction in
      * memory, decoding it and executing it
@@ -887,6 +897,10 @@ public class ControlUnit {
             case "NOT" -> {
                 System.out.println("[ControlUnit::singleStep] Processing NOT instruction...\n");
                 this.processMathRR(decodedInstruction);
+            }
+            case "FADD" -> {
+                System.out.println("[ControlUnit::singleStep] Processing FADD instruction...\n");
+                this.processMathFP(decodedInstruction);
             }
 
         }

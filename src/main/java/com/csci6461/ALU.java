@@ -1,6 +1,7 @@
 package com.csci6461;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * This holds all processes in the ALU
@@ -15,6 +16,8 @@ public class ALU {
      * Parameter to hold the Memory Buffer Register (MBR)
      */
     public Register mbr;
+
+    public Register[] fr;
 
     /**
      * This method checks the result of addition or subtraction and returns the appropriate
@@ -60,12 +63,14 @@ public class ALU {
      * @param gpr An array of Register objects with the GPRs for the simulation
      * @param mbr Register object with the MBR for the simulation
      */
-    ALU(Register[] gpr, Register mbr) {
+    ALU(Register[] gpr, Register mbr, Register[] fr) {
         /* Allocate storage for GPRs */
         this.gpr = gpr;
 
         /* Save MBR to local MBR parameter */
         this.mbr = mbr;
+
+        this.fr = fr;
     }
 
     /**
@@ -89,9 +94,32 @@ public class ALU {
             case "AND" -> RegToReg("AND", r, imm);
             case "ORR" -> RegToReg("ORR", r, imm);
             case "NOT" -> RegToReg("NOT", r, imm);
+            case "FADD" -> FpOp("FADD", r, imm);
 
             default -> CC.OKAY;
         };
+    }
+
+    protected CC FpOp(String code, int ifr, short val){
+        FloatingPoint regFP = new FloatingPoint(this.fr[ifr].read());
+        FloatingPoint memFP = new FloatingPoint(val);
+
+        if(Objects.equals(code, "FADD")){
+            if (regFP.getExponent() > memFP.getExponent()){
+                memFP.ShiftL(regFP.getExponent() - memFP.getExponent());
+            } else if (regFP.getExponent() < memFP.getExponent()){
+                regFP.ShiftL(memFP.getExponent() - regFP.getExponent());
+            }
+
+            System.out.println(regFP.getMantissa()+ memFP.getMantissa());
+            System.out.println(regFP.getMantissa());
+            System.out.println(memFP.getMantissa());
+            regFP.setMantissa((short)(regFP.getMantissa()+ memFP.getMantissa()));
+
+            this.fr[ifr].set_bits(get_bool_array(regFP.ToBool()));
+        }
+
+        return CC.OKAY;
     }
 
     /**
