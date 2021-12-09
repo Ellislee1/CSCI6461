@@ -104,11 +104,13 @@ public class ALU {
         FloatingPoint regFP = new FloatingPoint(this.fr[ifr].read());
         FloatingPoint memFP = new FloatingPoint(val);
 
+        CC conditionCode = CC.OKAY;
+
         if(Objects.equals(code, "FADD")){
             if (regFP.getExponent() > memFP.getExponent()){
-                memFP.ShiftL(regFP.getExponent() - memFP.getExponent());
+                conditionCode = memFP.ShiftL(regFP.getExponent() - memFP.getExponent());
             } else if (regFP.getExponent() < memFP.getExponent()){
-                regFP.ShiftL(memFP.getExponent() - regFP.getExponent());
+                conditionCode = regFP.ShiftL(memFP.getExponent() - regFP.getExponent());
             }
 
             System.out.println(regFP.getMantissa()+ memFP.getMantissa());
@@ -119,7 +121,7 @@ public class ALU {
             this.fr[ifr].set_bits(get_bool_array(regFP.ToBool()));
         }
 
-        return CC.OKAY;
+        return conditionCode;
     }
 
     /**

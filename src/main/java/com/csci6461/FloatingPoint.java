@@ -55,9 +55,24 @@ public class FloatingPoint {
 
     }
 
-    public void ShiftL(int val){
+    public CC ShiftL(int val){
+        CC code = CC.OKAY;
+        if (val > 8){
+            code = CC.OVERFLOW;
+        }else {
+            String strMantissa = String.format("%8s", Integer.toBinaryString(mantissa)).replace(' ', '0');
+            for (int i = 0; i < val; i++) {
+                if (strMantissa.charAt(i) == '1') {
+                    code = CC.OVERFLOW;
+                    break;
+                }
+            }
+        }
+
         this.mantissa = (short)((this.mantissa << val) & 0x0000FFFF);
         this.exponent = (short)(this.exponent + val);
+
+        return code;
     }
 
     public short ToShort(){
