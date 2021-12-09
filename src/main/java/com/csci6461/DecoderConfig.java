@@ -57,6 +57,7 @@ public class DecoderConfig {
         instructions.put(031, new BitWiseOperator("SRC"));
         instructions.put(032, new BitWiseOperator("RRC"));
         instructions.put(033, new BitWiseOperator("FADD"));
+        instructions.put(034, new BitWiseOperator("FSUB"));
     }
 
     /**

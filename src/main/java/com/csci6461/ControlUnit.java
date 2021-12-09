@@ -245,7 +245,7 @@ public class ControlUnit {
         }
 
         /* Read data from MBR and return */
-        return((short) this.mbr.read());
+        return this.mbr.read();
     }
 
     /**
@@ -350,9 +350,9 @@ public class ControlUnit {
 
         final short data;
         if(index){
-            data = (short) this.ixr[args[1]-1].read();
+            data = this.ixr[args[1]-1].read();
         } else {
-            data = (short) this.gpr[args[0]].read();
+            data = this.gpr[args[0]].read();
         }
 
 
@@ -414,7 +414,7 @@ public class ControlUnit {
 
         /* Call operate on ALU with Opcode and return condition code */
         try {
-            this.controlCode = this.alu.operate(instruction.getName(), (int) args[0], (short) args[1]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
         } catch (IOException e) {
             System.out.println("[ControlUnit::processMathRR] IOException during Math Register-to-Register Operation");
             e.printStackTrace();
@@ -563,7 +563,7 @@ public class ControlUnit {
         final int[] args;
         args = instruction.getArguments(); // Get arguments
 
-        pc.load((short)gpr[3].read());
+        pc.load(gpr[3].read());
         gpr[0].load((short)args[3]);
 
         return false;
@@ -651,7 +651,7 @@ public class ControlUnit {
 
         int val = gpr[args[0]].read();
         System.out.printf("[ControlUnit::processSRC] Value of register before shift: %s\n",
-                Integer.toBinaryString((int)(val & 0xffffffff)));
+                Integer.toBinaryString(val & 0xffffffff));
 
         // If a Right Shift
         if(args[2] == 0){
@@ -673,7 +673,7 @@ public class ControlUnit {
             val = val << args[3];
         }
         System.out.printf("[ControlUnit::processSRC] Value after shift: %s\n",
-                Integer.toBinaryString((int)(val & 0xffffffff)));
+                Integer.toBinaryString(val & 0xffffffff));
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
@@ -907,7 +907,7 @@ public class ControlUnit {
 
         if (increment_pc)
         {
-            short count = (short) this.pc.read();
+            short count = this.pc.read();
             count++;
             final boolean[] _new_count = this.get_bool_array(this.getBinaryString(count));
             this.pc.set_bits(_new_count);

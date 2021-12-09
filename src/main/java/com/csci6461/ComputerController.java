@@ -265,7 +265,7 @@ public class ComputerController {
                         inputInt = 4;
                     } else {
                         System.out.println("Input is regular character; Encoding ASCII");
-                        inputInt = (int) newValue.charAt(0);
+                        inputInt = newValue.charAt(0);
                     }
                     newText = newValue;
                 } else {
@@ -762,7 +762,7 @@ public class ComputerController {
         outList = cu.lstOutput;
 
         for(int x : outList){
-            lstOutput.getItems().add("> "+String.valueOf(x));
+            lstOutput.getItems().add("> "+ x);
         }
 
     }
