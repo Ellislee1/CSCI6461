@@ -737,7 +737,7 @@ public class ControlUnit {
         getData(args[3],args[1],args[2]);
         short memFP = this.mbr.read();
 
-        alu.operate(decodedInstruction.getName(), frReg, memFP);
+        this.controlCode = alu.operate(decodedInstruction.getName(), frReg, memFP);
     }
 
     /**
