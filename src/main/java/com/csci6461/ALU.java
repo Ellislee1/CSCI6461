@@ -95,7 +95,7 @@ public class ALU {
             case "ORR" -> RegToReg("ORR", r, imm);
             case "NOT" -> RegToReg("NOT", r, imm);
             case "FADD" -> FpOp("FADD", r, imm);
-            case "FSub" -> FpOp("FSUB", r, imm);
+            case "FSUB" -> FpOp("FSUB", r, imm);
 
             default -> CC.OKAY;
         };

@@ -368,9 +368,10 @@ public class ControlUnit {
         final int[] args;
         args = instruction.getArguments();
 
-        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]);
 
-        final boolean[] data = this.get_bool_array(this.getBinaryString(effectiveAdr));
+        this.getData(args[3],args[1],args[2]);
+
+        final boolean[] data = this.get_bool_array(this.getBinaryString(this.mbr.read()));
 
         try {
             this.gpr[args[0]].load(data);
@@ -902,6 +903,18 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing FADD instruction...\n");
                 this.processMathFP(decodedInstruction);
             }
+            case "FSUB" -> {
+                System.out.println("[ControlUnit::singleStep] Processing FSUB instruction...\n");
+                this.processMathFP(decodedInstruction);
+            }
+            case "LDFR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDFR instruction...\n");
+                this.processLDFR(decodedInstruction);
+            }
+            case "STFR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STFR instruction...\n");
+                this.processSTFR(decodedInstruction);
+            }
 
         }
 
@@ -914,6 +927,36 @@ public class ControlUnit {
         }
 
         return(cont);
+    }
+
+    private void processSTFR(Instruction decodedInstruction) throws IOException {
+        final int[] args;
+        args = decodedInstruction.getArguments();
+
+        final short data;
+        data = this.fr[args[0]].read();
+
+
+
+        this.writeDataToMemory(this.calculateEA(args[3],args[1],args[2]), data);
+    }
+
+    private void processLDFR(Instruction decodedInstruction) throws IOException {
+        final int[] args;
+        args = decodedInstruction.getArguments();
+
+        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]);
+        this.getData(args[3],args[1],args[2]);
+
+        final boolean[] data = this.get_bool_array(this.getBinaryString(this.mbr.read()));
+        System.out.println(Arrays.toString(data));
+
+        try {
+            this.fr[args[0]].load(data);
+        } catch (final IOException e) {
+            System.out.println("[ERROR]:: Could Not read memory");
+            e.printStackTrace();
+        }
     }
 
     /**
