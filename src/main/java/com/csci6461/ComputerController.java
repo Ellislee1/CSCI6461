@@ -20,8 +20,10 @@ public class ComputerController {
 
     /**
      * Control unit for the system
+     * NOTE: Instantiate VectorProcessor implementation of CU so we can handle vector instructions
      */
-    private ControlUnit cu;
+    // private ControlUnit cu;
+    private VectorProcessor cu;
 
     /**
      * Toggle buttons for the address
@@ -173,7 +175,9 @@ public class ComputerController {
         outList = new ArrayList<Integer>();
 
 
-        cu = new ControlUnit(txtInput,btnSubmit,lblInput,outList);
+        /* Instantiate VectorProcessor implementation of CU so we can handle vector instructions */
+        // cu = new ControlUnit(txtInput,btnSubmit,lblInput,outList);
+        cu = new VectorProcessor(txtInput,btnSubmit,lblInput,outList);
 
         bitController = new ToggleButton[]{adr0, adr1, adr2, adr3, adr4, i5, ixr6, ixr7, gpr8, gpr9, ctlA, ctlB,
                 ctlC, ctlD, ctlE, ctlF};
