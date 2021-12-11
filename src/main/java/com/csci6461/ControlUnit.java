@@ -35,6 +35,7 @@ public class ControlUnit {
     private static final int BLOCK_SIZE = 16;        /* Number of words in a memory block */
     private static final int NUMBER_OF_GPR = 4;      /* Number of general purpose registers */
     private static final int NUMBER_OF_IXR = 3;      /* Number of general purpose registers */
+    private static final int NUMBER_OF_FR = 4;      /* Number of Floating point registers */
 
     /**
      * Parameter to hold the Program Counter (PC) register
@@ -50,6 +51,11 @@ public class ControlUnit {
      * Parameter to hold the IX Registers (IXR)
      */
     public Register[] ixr;
+
+    /**
+     * Parameter to hold the FRRegisters (FR)
+     */
+    public Register[] fr;
 
     /**
      * Parameter to hold the Memory Address Register (MAR)
@@ -155,6 +161,12 @@ public class ControlUnit {
             this.ixr[i] = new Register(name, 16);
         }
 
+        this.fr = new Register[ControlUnit.NUMBER_OF_FR];
+        for (int i = 0; i < ControlUnit.NUMBER_OF_FR; i++) {
+            final String name = String.format("FR%d", i);
+            this.fr[i] = new Register(name, 16);
+        }
+
         /*
          * Create Memory Address Register (MAR)
          */
@@ -188,7 +200,7 @@ public class ControlUnit {
         /*
          * Create ALU
          */
-        this.alu = new ALU(this.gpr, this.mbr);
+        this.alu = new ALU(this.gpr, this.mbr, this.fr);
 
         this.controlCode = CC.OKAY;
 
@@ -233,7 +245,7 @@ public class ControlUnit {
         }
 
         /* Read data from MBR and return */
-        return((short) this.mbr.read());
+        return this.mbr.read();
     }
 
     /**
@@ -338,9 +350,9 @@ public class ControlUnit {
 
         final short data;
         if(index){
-            data = (short) this.ixr[args[1]-1].read();
+            data = this.ixr[args[1]-1].read();
         } else {
-            data = (short) this.gpr[args[0]].read();
+            data = this.gpr[args[0]].read();
         }
 
 
@@ -356,9 +368,10 @@ public class ControlUnit {
         final int[] args;
         args = instruction.getArguments();
 
-        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]);
 
-        final boolean[] data = this.get_bool_array(this.getBinaryString(effectiveAdr));
+        this.getData(args[3],args[1],args[2]);
+
+        final boolean[] data = this.get_bool_array(this.getBinaryString(this.mbr.read()));
 
         try {
             this.gpr[args[0]].load(data);
@@ -402,7 +415,7 @@ public class ControlUnit {
 
         /* Call operate on ALU with Opcode and return condition code */
         try {
-            this.controlCode = this.alu.operate(instruction.getName(), (int) args[0], (short) args[1]);
+            this.controlCode = this.alu.operate(instruction.getName(), args[0], (short) args[1]);
         } catch (IOException e) {
             System.out.println("[ControlUnit::processMathRR] IOException during Math Register-to-Register Operation");
             e.printStackTrace();
@@ -551,7 +564,7 @@ public class ControlUnit {
         final int[] args;
         args = instruction.getArguments(); // Get arguments
 
-        pc.load((short)gpr[3].read());
+        pc.load(gpr[3].read());
         gpr[0].load((short)args[3]);
 
         return false;
@@ -639,7 +652,7 @@ public class ControlUnit {
 
         int val = gpr[args[0]].read();
         System.out.printf("[ControlUnit::processSRC] Value of register before shift: %s\n",
-                Integer.toBinaryString((int)(val & 0xffffffff)));
+                Integer.toBinaryString(val & 0xffffffff));
 
         // If a Right Shift
         if(args[2] == 0){
@@ -661,7 +674,7 @@ public class ControlUnit {
             val = val << args[3];
         }
         System.out.printf("[ControlUnit::processSRC] Value after shift: %s\n",
-                Integer.toBinaryString((int)(val & 0xffffffff)));
+                Integer.toBinaryString(val & 0xffffffff));
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
@@ -716,6 +729,16 @@ public class ControlUnit {
         }
 
         gpr[args[0]].set_bits(msb);
+    }
+
+    private void processMathFP(Instruction decodedInstruction) throws IOException {
+        int[] args = decodedInstruction.getArguments();
+        int frReg = args[0];
+
+        getData(args[3],args[1],args[2]);
+        short memFP = this.mbr.read();
+
+        this.controlCode = alu.operate(decodedInstruction.getName(), frReg, memFP);
     }
 
     /**
@@ -876,18 +899,64 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing NOT instruction...\n");
                 this.processMathRR(decodedInstruction);
             }
+            case "FADD" -> {
+                System.out.println("[ControlUnit::singleStep] Processing FADD instruction...\n");
+                this.processMathFP(decodedInstruction);
+            }
+            case "FSUB" -> {
+                System.out.println("[ControlUnit::singleStep] Processing FSUB instruction...\n");
+                this.processMathFP(decodedInstruction);
+            }
+            case "LDFR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing LDFR instruction...\n");
+                this.processLDFR(decodedInstruction);
+            }
+            case "STFR" -> {
+                System.out.println("[ControlUnit::singleStep] Processing STFR instruction...\n");
+                this.processSTFR(decodedInstruction);
+            }
 
         }
 
         if (increment_pc)
         {
-            short count = (short) this.pc.read();
+            short count = this.pc.read();
             count++;
             final boolean[] _new_count = this.get_bool_array(this.getBinaryString(count));
             this.pc.set_bits(_new_count);
         }
 
         return(cont);
+    }
+
+    private void processSTFR(Instruction decodedInstruction) throws IOException {
+        final int[] args;
+        args = decodedInstruction.getArguments();
+
+        final short data;
+        data = this.fr[args[0]].read();
+
+
+
+        this.writeDataToMemory(this.calculateEA(args[3],args[1],args[2]), data);
+    }
+
+    private void processLDFR(Instruction decodedInstruction) throws IOException {
+        final int[] args;
+        args = decodedInstruction.getArguments();
+
+        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]);
+        this.getData(args[3],args[1],args[2]);
+
+        final boolean[] data = this.get_bool_array(this.getBinaryString(this.mbr.read()));
+        System.out.println(Arrays.toString(data));
+
+        try {
+            this.fr[args[0]].load(data);
+        } catch (final IOException e) {
+            System.out.println("[ERROR]:: Could Not read memory");
+            e.printStackTrace();
+        }
     }
 
     /**
