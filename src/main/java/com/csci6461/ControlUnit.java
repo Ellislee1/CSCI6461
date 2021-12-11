@@ -127,6 +127,11 @@ public class ControlUnit {
     /**
      * Control Unit constructor will instantiate all registers and load 
      * the ROM program
+     *
+     * @param txtInput Object to retrieve user text input
+     * @param btnInput Button object to indicate completion of user input
+     * @param lblInput Label GUI object to enable user input on IN opcode
+     * @param output   Output text object to simulate console output
      */
     public ControlUnit(TextField txtInput, Button btnInput, Label lblInput, ArrayList<Integer> output) {
         System.out.println("Initializing control unit...");
@@ -743,7 +748,7 @@ public class ControlUnit {
 
     /**
      * Method to execute single step by getting the next instruction in
-     * memory, decoding it and executing it
+     * memory, decoding it passing it to execution modules
      *
      * @return A boolean set to false whenever halt is received
      */
@@ -774,6 +779,25 @@ public class ControlUnit {
         /* Process instruction according to translated Opcode */
         System.out.printf("[ControlUnit::singleStep] Processing instruction: %s\n", decodedInstruction.getName());
 
+        /* Send decoded instruction to processing logic and return value to caller */
+        return(processInstruction(decodedInstruction));
+    }
+
+    /**
+     * This function processes decoded instructions by calling the appropriate function
+     * module according to the type of instruction.
+     * NOTE: For the base control unit, only Scalar instructions are processed. This method
+     *       should be overridden for special implementations like Vector computers.
+     *
+     * @param decodedInstruction Instruction object of appropriate type to get arguments
+     *
+     * @return A boolean set to false whenever halt is received
+     *
+     * @throws IOException Whenever an interrupt or invalid occurs
+     */
+    public boolean processInstruction(Instruction decodedInstruction) throws IOException {
+
+        /* Get the instruction's name so we can process accordingly */
         final String name = decodedInstruction.getName();
 
         /* Check to see if the code is a "special" instruction */
@@ -966,7 +990,7 @@ public class ControlUnit {
      * @param i if the reference is indirect
      * @return returns the new address
      */
-    private short calculateEA(final int address, int ix, final int i) throws IOException {
+    protected short calculateEA(final int address, int ix, final int i) throws IOException {
         final short ea;
 
         System.out.printf("[ControlUnit::CalculateEA] Fields are: Address = %d, IX = %d, I = %d\n",
