@@ -68,7 +68,7 @@ public class Memory {
      */
     public void write() throws IOException {
         /* Get the address from the MAR */
-        short address = (short) mar.read();
+        short address = mar.read();
 
         /* Check for out of bounds address */
         if (address < 0 || address >= size) {
@@ -79,7 +79,7 @@ public class Memory {
         }
 
         /* Copy value in MBR into the specified address in memory */
-        data[address] = (short) mbr.read();
+        data[address] = mbr.read();
     }
 
     /**

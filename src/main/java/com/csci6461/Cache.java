@@ -242,7 +242,7 @@ public class Cache extends Memory{
     @Override
     public void read() throws IOException {
         /* Get address from MAR */
-        short address = (short) mar.read();
+        short address = mar.read();
 
         /* Get tag so we can search if line is cached */
         short tag = getTag(address);
@@ -282,7 +282,7 @@ public class Cache extends Memory{
     @Override
     public void write() throws IOException {
         /* Get address from MAR */
-        short address = (short) mar.read();
+        short address = mar.read();
 
         /* Get tag so we can search if line is cached */
         short tag = getTag(address);
@@ -296,7 +296,7 @@ public class Cache extends Memory{
             short offset = getByteOffset(address);
 
             /* read the word from MBR and write into the cache */
-            line[offset]=(short) mbr.read();
+            line[offset]= mbr.read();
             System.out.printf("[Cache::write] successfully write into cache: %d\n", line[offset]);
         } else {
             System.out.printf("[Cache::write] Cache miss for address %s.\n", address);

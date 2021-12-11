@@ -94,7 +94,7 @@ public class CacheTest {
         cache.printCacheLine((short) (CACHE_SIZE - 1));
 
         /* Read the MBR and make sure it is the value we put in there */
-        short value = (short) mbr.read();
+        short value = mbr.read();
         if (value != (short) (0xAAAA & 0xffff)) {
             System.out.printf("\n\nERROR: Expected MBR to have %s but got %s\n",
                     Integer.toBinaryString(0xAAAA & 0xffff),
@@ -123,7 +123,7 @@ public class CacheTest {
         cache.read();
 
         /* Get value loaded into MBR and verify that intended value was written through to memory */
-        value = (short) mbr.read();
+        value = mbr.read();
         if (value != (short) (0xAAAA & 0xffff)) {
             System.out.printf("\n\nERROR: Expected MBR to have %s but got %s\n",
                     Integer.toBinaryString(0xAAAA & 0xffff),

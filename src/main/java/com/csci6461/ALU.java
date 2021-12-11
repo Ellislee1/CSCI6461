@@ -1,6 +1,7 @@
 package com.csci6461;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * This holds all processes in the ALU
@@ -15,6 +16,8 @@ public class ALU {
      * Parameter to hold the Memory Buffer Register (MBR)
      */
     public Register mbr;
+
+    public Register[] fr;
 
     /**
      * This method checks the result of addition or subtraction and returns the appropriate
@@ -60,12 +63,14 @@ public class ALU {
      * @param gpr An array of Register objects with the GPRs for the simulation
      * @param mbr Register object with the MBR for the simulation
      */
-    ALU(Register[] gpr, Register mbr) {
+    ALU(Register[] gpr, Register mbr, Register[] fr) {
         /* Allocate storage for GPRs */
         this.gpr = gpr;
 
         /* Save MBR to local MBR parameter */
         this.mbr = mbr;
+
+        this.fr = fr;
     }
 
     /**
@@ -89,9 +94,49 @@ public class ALU {
             case "AND" -> RegToReg("AND", r, imm);
             case "ORR" -> RegToReg("ORR", r, imm);
             case "NOT" -> RegToReg("NOT", r, imm);
+            case "FADD" -> FpOp("FADD", r, imm);
+            case "FSUB" -> FpOp("FSUB", r, imm);
 
             default -> CC.OKAY;
         };
+    }
+
+    protected CC FpOp(String code, int ifr, short val){
+        FloatingPoint regFP = new FloatingPoint(this.fr[ifr].read());
+        FloatingPoint memFP = new FloatingPoint(val);
+
+        CC conditionCode = CC.OKAY;
+
+        if(Objects.equals(code, "FADD")){
+            if (regFP.getExponent() > memFP.getExponent()){
+                conditionCode = memFP.ShiftL(regFP.getExponent() - memFP.getExponent());
+            } else if (regFP.getExponent() < memFP.getExponent()){
+                conditionCode = regFP.ShiftL(memFP.getExponent() - regFP.getExponent());
+            }
+
+            if(regFP.getMantissa()+ memFP.getMantissa() > 32767){
+                conditionCode = CC.OVERFLOW;
+            }
+            regFP.setMantissa((short)(regFP.getMantissa()+ memFP.getMantissa()));
+
+            this.fr[ifr].set_bits(get_bool_array(regFP.ToBool()));
+        } else if(Objects.equals(code, "FSUB")) {
+            if (regFP.getExponent() > memFP.getExponent()){
+                conditionCode = memFP.ShiftL(regFP.getExponent() - memFP.getExponent());
+            } else if (regFP.getExponent() < memFP.getExponent()){
+                conditionCode = regFP.ShiftL(memFP.getExponent() - regFP.getExponent());
+            }
+
+            if(regFP.getMantissa()- memFP.getMantissa() < -32767){
+                conditionCode = CC.UNDERFLOW;
+            }
+
+            regFP.setMantissa((short)(regFP.getMantissa()+ memFP.getMantissa()));
+
+            this.fr[ifr].set_bits(get_bool_array(regFP.ToBool()));
+        }
+
+        return conditionCode;
     }
 
     /**
@@ -112,17 +157,17 @@ public class ALU {
                 code, rx, ry);
 
         /* Make sure rx and ry are valid for divide and multiply */
-        if ((code == "DVD") || (code == "MLT")) {
+        if ((Objects.equals(code, "DVD")) || (Objects.equals(code, "MLT"))) {
             if ((rx != 0 && rx != 2) || (ry != 0 && ry != 2)) {
-                String error = String.format("Invalid register for multiply or divide.");
+                String error = "Invalid register for multiply or divide.";
                 throw (new IOException(error));
             }
         }
 
-        short operand1 = (short) gpr[rx].read();
+        short operand1 = gpr[rx].read();
         short operand2 = -1;
-        if (code != "NOT") {
-            operand2 = (short) gpr[ry].read();
+        if (!Objects.equals(code, "NOT")) {
+            operand2 = gpr[ry].read();
         } else {
             System.out.println("[ALU::RegToReg] Processing unary instruction. RY field ignored.");
         }
@@ -147,7 +192,7 @@ public class ALU {
                 }
 
                 /* Extract upper and lowe work if result is more than 16-bits long */
-                String bits = Integer.toBinaryString((result & 0xffffffff));
+                String bits = Integer.toBinaryString((result));
                 int startNdx = 0;
                 String highBits = "0";
                 if (bits.length() > 16) {
@@ -162,7 +207,7 @@ public class ALU {
                 }
 
                 /* Get low bits from result binary string */
-                String lowBits = bits.substring(startNdx, bits.length());
+                String lowBits = bits.substring(startNdx);
 
                 System.out.printf("[ALU::RegToReg] Have result bits: %s; High bits are %s and Low bits are %s\n",
                         bits, highBits, lowBits);
@@ -170,7 +215,6 @@ public class ALU {
                 /* Save outputs to appropriate registers */
                 gpr[rx].load(get_bool_array(lowBits));
                 gpr[rx+1].load(get_bool_array(highBits));
-                break;
             }
             case "DVD" -> {
                 System.out.println("[ALU::RegToReg] Performing division...");
@@ -195,36 +239,32 @@ public class ALU {
                 } else {
                     System.out.println("[ALU::RegToReg] Operands are NOT equal!");
                 }
-                break;
-             }
+            }
             case "AND" -> {
                 System.out.println("[ALU::RegToReg] Performing AND operation...");
                 short result = (short)(operand1 & operand2);
                 System.out.printf("[ALU::RegToReg] Result of %s & %s is %s\n",
-                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)operand2),
-                        Integer.toBinaryString((int)result));
+                        Integer.toBinaryString(operand1), Integer.toBinaryString(operand2),
+                        Integer.toBinaryString(result));
                 /* Save output to rx */
                 gpr[rx].load(result);
-                break;
             }
             case "ORR" -> {
                 System.out.println("[ALU::RegToReg] Performing OR operation...");
                 short result = (short)(operand1 | operand2);
                 System.out.printf("[ALU::RegToReg] Result of %s | %s is %s\n",
-                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)operand2),
-                        Integer.toBinaryString((int)result));
+                        Integer.toBinaryString(operand1), Integer.toBinaryString(operand2),
+                        Integer.toBinaryString(result));
                 /* Save output to rx */
                 gpr[rx].load(result);
-                break;
             }
             case "NOT" -> {
                 System.out.println("[ALU::RegToReg] Performing NOT operation...");
                 short result = (short)(~operand1);
                 System.out.printf("[ALU::RegToReg] Result of !%s is %s\n",
-                        Integer.toBinaryString((int)operand1), Integer.toBinaryString((int)result));
+                        Integer.toBinaryString(operand1), Integer.toBinaryString(result));
                 /* Save output to rx */
                 gpr[rx].load(result);
-                break;
             }
         }
 
@@ -239,8 +279,8 @@ public class ALU {
      */
     protected CC MemToReg(int r, boolean subtraction){
         CC cc = CC.OKAY;
-        short operand1 = (short) mbr.read();
-        short operand2 = (short) gpr[r].read();
+        short operand1 = mbr.read();
+        short operand2 = gpr[r].read();
 
         System.out.printf("[ALU::MemToReg] Operands are: %d, %d; Subtraction flag is: %b\n",
                 operand1, operand2, subtraction);
@@ -250,7 +290,7 @@ public class ALU {
                 gpr[r].load((short)(operand2-operand1));
 
                 /* Check result for overflow */
-                cc = getAddSubtractConditionCode(operand1,operand2,(short)gpr[r].read(),true);
+                cc = getAddSubtractConditionCode(operand1,operand2, gpr[r].read(),true);
             } catch (IOException e) {
                 System.out.printf("Exception while loading result of subtraction into GPR%d\n",r);
                 e.printStackTrace();
@@ -260,7 +300,7 @@ public class ALU {
                 gpr[r].load((short)(operand2+operand1));
 
                 /* Check result for overflow */
-                cc = getAddSubtractConditionCode(operand1,operand2,(short)gpr[r].read(),false);
+                cc = getAddSubtractConditionCode(operand1,operand2, gpr[r].read(),false);
             } catch (IOException e) {
                 System.out.printf("Exception while loading result of addition into GPR%d\n",r);
                 e.printStackTrace();
@@ -284,7 +324,7 @@ public class ALU {
         System.out.printf("[ALU::ImmToReg] Arguments are: r = %d, immed = %d, subtract = %b\n",
                 r, imm, subtraction);
 
-        short operand2 = (short) gpr[r].read();
+        short operand2 = gpr[r].read();
         System.out.printf("[ALU::ImmToReg] Retrieved operand from register: %d", operand2);
 
         if(operand2 == 0){
@@ -294,7 +334,7 @@ public class ALU {
                 } else {
                     gpr[r].load(imm);
                 }
-                cc = getAddSubtractConditionCode(imm,operand2,(short) gpr[r].read(),subtraction);
+                cc = getAddSubtractConditionCode(imm,operand2, gpr[r].read(),subtraction);
             } catch (IOException e){
                 System.out.printf("Error while loading result of addition/subtraction to GPR%d", r);
                 e.printStackTrace();
@@ -306,7 +346,7 @@ public class ALU {
                 } else {
                     gpr[r].load((short)(operand2+imm));
                 }
-                cc = getAddSubtractConditionCode(imm,operand2,(short) gpr[r].read(),subtraction);
+                cc = getAddSubtractConditionCode(imm,operand2, gpr[r].read(),subtraction);
             } catch (IOException e){
                 System.out.printf("Error while loading result of addition/subtraction to GPR%d", r);
                 e.printStackTrace();

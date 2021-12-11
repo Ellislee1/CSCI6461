@@ -58,6 +58,10 @@ public class DecoderConfig {
         instructions.put(032, new BitWiseOperator("RRC"));
         instructions.put(035, new MemOp("VADD"));
         instructions.put(036, new MemOp("VSUB"));
+        instructions.put(033, new FloatingPointOperator("FADD"));
+        instructions.put(034, new FloatingPointOperator("FSUB"));
+        instructions.put(051, new FloatingPointOperator("STFR"));
+        instructions.put(050, new FloatingPointOperator("LDFR"));
     }
 
     /**
