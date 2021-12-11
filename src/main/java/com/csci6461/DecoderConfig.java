@@ -62,6 +62,7 @@ public class DecoderConfig {
         instructions.put(034, new FloatingPointOperator("FSUB"));
         instructions.put(051, new FloatingPointOperator("STFR"));
         instructions.put(050, new FloatingPointOperator("LDFR"));
+        instructions.put(037, new FloatingPointOperator("CNVRT"));
     }
 
     /**

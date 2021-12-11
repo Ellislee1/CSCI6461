@@ -602,7 +602,7 @@ public class ControlUnit {
             System.out.println("[ControlUnit::processIN] Processing card reader input.");
 
             if (cardBuffer == null) {
-                String error = String.format("Received card reader input instruction but no card file is loaded!");
+                String error = "Received card reader input instruction but no card file is loaded!";
                 throw new IOException(error);
             }
 
@@ -657,7 +657,7 @@ public class ControlUnit {
 
         int val = gpr[args[0]].read();
         System.out.printf("[ControlUnit::processSRC] Value of register before shift: %s\n",
-                Integer.toBinaryString(val & 0xffffffff));
+                Integer.toBinaryString(val));
 
         // If a Right Shift
         if(args[2] == 0){
@@ -679,7 +679,7 @@ public class ControlUnit {
             val = val << args[3];
         }
         System.out.printf("[ControlUnit::processSRC] Value after shift: %s\n",
-                Integer.toBinaryString(val & 0xffffffff));
+                Integer.toBinaryString(val));
 
         gpr[args[0]].set_bits(get_bool_array(getBinaryString((short)val)));
     }
@@ -939,6 +939,10 @@ public class ControlUnit {
                 System.out.println("[ControlUnit::singleStep] Processing STFR instruction...\n");
                 this.processSTFR(decodedInstruction);
             }
+            case "CNVRT" -> {
+                System.out.println("[ControlUnit::singleStep] Processing CNVRT instruction...\n");
+                this.processCNVRT(decodedInstruction);
+            }
 
         }
 
@@ -951,6 +955,12 @@ public class ControlUnit {
         }
 
         return(cont);
+    }
+
+    private void processCNVRT(Instruction decodedInstruction) throws IOException {
+
+
+
     }
 
     private void processSTFR(Instruction decodedInstruction) throws IOException {
@@ -968,8 +978,6 @@ public class ControlUnit {
     private void processLDFR(Instruction decodedInstruction) throws IOException {
         final int[] args;
         args = decodedInstruction.getArguments();
-
-        final short effectiveAdr = this.calculateEA(args[3],args[1],args[2]);
         this.getData(args[3],args[1],args[2]);
 
         final boolean[] data = this.get_bool_array(this.getBinaryString(this.mbr.read()));
